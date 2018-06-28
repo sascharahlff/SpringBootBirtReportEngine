@@ -7,6 +7,16 @@
 # BlueJ files
 *.ctxt
 
+#OSX
+.DS_Store
+
+#Gradle
+.classpath
+.gradle
+.project
+.settings
+target/
+
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
