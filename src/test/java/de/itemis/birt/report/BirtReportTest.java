@@ -1,5 +1,6 @@
 package de.itemis.birt.report;
 
+import org.eclipse.birt.report.engine.api.EngineConfig;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -12,7 +13,6 @@ import de.itemis.birt.Application;
 public class BirtReportTest {
 	@Test
 	public void reportTest() {
-		ReportEngine engine = new ReportEngine();
-		
+		//ReportEngine engine = new ReportEngine();
 	}
 }
