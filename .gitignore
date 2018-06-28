@@ -15,6 +15,9 @@
 .gradle
 .project
 .settings
+bin/
+build/
+logs/
 target/
 
 # Mobile Tools for Java (J2ME)
