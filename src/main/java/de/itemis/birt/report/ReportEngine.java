@@ -47,20 +47,20 @@ public class ReportEngine {
 		try {
 			// Load design
 			ClassLoader classLoader = getClass().getClassLoader();
-			URL url = classLoader.getResource("reports/blub.rptdesign");
+			URL url = classLoader.getResource("reports/foo.rptdesign");
 			URL outputUrl = classLoader.getResource("reports/");
 
 			// Render to pdf
 			IReportRunnable design = engine.openReportDesign(url.getFile());
 			RenderOption renderOption = new PDFRenderOption();
 			renderOption.setOutputFormat("pdf");
-			renderOption.setOutputFileName(outputUrl.getFile() + "blub.pdf");
-
+			renderOption.setOutputFileName(outputUrl.getFile() + "foo.pdf");
+			
 			// Set parameters to prefill PDF
 			Map<String, String> params = new HashMap<String, String>();
-			params.put("firstName", "blub foo bar");
-			params.put("myLabel", "foo.bar");
-			
+			params.put("firstName", "Biff Tannen");
+			params.put("xmlReportFile", "Biff Tannen");
+						
 			// Render task
 			IRunAndRenderTask task = engine.createRunAndRenderTask(design);
 			task.setRenderOption(renderOption);
