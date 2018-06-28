@@ -16,8 +16,8 @@
 .project
 .settings
 bin/
-build/
 logs/
+build/
 target/
 
 # Mobile Tools for Java (J2ME)

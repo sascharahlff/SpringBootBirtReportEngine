@@ -1,7 +1,6 @@
 package de.itemis.birt.report;
 
 import java.net.URL;
-import java.nio.file.Paths;
 import java.util.logging.Level;
 
 import javax.annotation.PostConstruct;
@@ -10,9 +9,7 @@ import javax.annotation.PreDestroy;
 import org.eclipse.birt.core.exception.BirtException;
 import org.eclipse.birt.core.framework.Platform;
 import org.eclipse.birt.report.engine.api.EngineConfig;
-import org.eclipse.birt.report.engine.api.EngineConstants;
 import org.eclipse.birt.report.engine.api.EngineException;
-import org.eclipse.birt.report.engine.api.HTMLRenderOption;
 import org.eclipse.birt.report.engine.api.IReportEngine;
 import org.eclipse.birt.report.engine.api.IReportEngineFactory;
 import org.eclipse.birt.report.engine.api.IReportRunnable;
@@ -29,7 +26,7 @@ public class ReportEngine {
 	public void init() {
 		System.out.println("startup");
 		EngineConfig engineConfig = new EngineConfig();
-		engineConfig.setLogConfig("usr/repos/logs", Level.WARNING);
+		engineConfig.setLogConfig("logs", Level.WARNING);
 
 		try {
 			Platform.startup(engineConfig);
@@ -66,13 +63,6 @@ public class ReportEngine {
 			// task.setParameterValue("Top Count", (new Integer(5)));
 			// task.validateParameters();
 
-			// Setup rendering to HTML
-			// HTMLRenderOption options = new HTMLRenderOption();
-			// options.setOutputFileName("output/resample/TopNPercent.html");
-			// options.setOutputFormat("html");
-
-			// Setting this to true removes html and body tags
-			//renderOption.setEmbeddable(false);
 			task.setRenderOption(renderOption);
 			// run and render report
 			task.run();
@@ -81,31 +71,7 @@ public class ReportEngine {
 			e.printStackTrace();
 		}
 	}
-
-//	public void test() {
-//		try {
-//			RenderOption renderOption = getFormatOption(reportId, request.getFormat());
-//			IReportRunnable design = reportEngine.openReportDesign(reportText);
-//			IRunAndRenderTask task = reportEngine.createRunAndRenderTask(design);
-//			task.setRenderOption(renderOption);
-//
-//			if (request.getParams() != null) {
-//				task.setParameterValues(request.getParams());
-//			}
-//
-//			task.run();
-//			task.close();
-//			logger.info("Finished report with id {}", reportId);
-//		} catch (Exception e) {
-//			logger.error("Report rendering error", e);
-//			throw new Exception("Report rendering error");
-//		}
-//
-//		reportText.close();
-//
-//		return getReportUrl(reportId, request.getFormat());
-//	}
-
+	
 	@PreDestroy
 	public void destroy() {
 		System.out.println("destroy");
