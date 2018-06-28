@@ -177,8 +177,9 @@ WHERE COUNTRY = 'USA']]></xml-property>
         </simple-master-page>
     </page-setup>
     <body>
-        <label id="9">
-            <text-property name="text">Das ist ein Test Report!</text-property>
-        </label>
+        <text name="firstName" id="11">
+            <property name="contentType">auto</property>
+            <text-property name="content"><![CDATA[Test]]></text-property>
+        </text>
     </body>
 </report>

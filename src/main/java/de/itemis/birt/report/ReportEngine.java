@@ -1,6 +1,8 @@
 package de.itemis.birt.report;
 
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 
 import javax.annotation.PostConstruct;
@@ -45,26 +47,26 @@ public class ReportEngine {
 		try {
 			// Load design
 			ClassLoader classLoader = getClass().getClassLoader();
-			URL url = classLoader.getResource("reports/test.rptdesign");
+			URL url = classLoader.getResource("reports/blub.rptdesign");
 			URL outputUrl = classLoader.getResource("reports/");
 
 			// Render to pdf
 			IReportRunnable design = engine.openReportDesign(url.getFile());
 			RenderOption renderOption = new PDFRenderOption();
 			renderOption.setOutputFormat("pdf");
-			renderOption.setOutputFileName(outputUrl.getFile() + "foo.pdf");
+			renderOption.setOutputFileName(outputUrl.getFile() + "blub.pdf");
 
+			// Set parameters to prefill PDF
+			Map<String, String> params = new HashMap<String, String>();
+			params.put("firstName", "blub foo bar");
+			params.put("myLabel", "foo.bar");
+			
 			// Render task
 			IRunAndRenderTask task = engine.createRunAndRenderTask(design);
 			task.setRenderOption(renderOption);
-
-			// Set parameter values and validate
-			// task.setParameterValue("Top Percentage", (new Integer(3)));
-			// task.setParameterValue("Top Count", (new Integer(5)));
-			// task.validateParameters();
-
-			task.setRenderOption(renderOption);
-			// run and render report
+			task.setParameterValues(params);
+			task.validateParameters();
+			
 			task.run();
 			task.close();
 		} catch (EngineException e) {
