@@ -273,6 +273,18 @@
         </simple-master-page>
     </page-setup>
     <body>
+        <data id="86">
+            <property name="dataSet">Data Set Name</property>
+            <list-property name="boundDataColumns">
+                <structure>
+                    <property name="name">name</property>
+                    <text-property name="displayName">name</text-property>
+                    <expression name="expression" type="javascript">dataSetRow["name"]</expression>
+                    <property name="dataType">string</property>
+                </structure>
+            </list-property>
+            <property name="resultSetColumn">name</property>
+        </data>
         <table id="47">
             <property name="dataSet">Data Set</property>
             <list-property name="boundDataColumns">
@@ -308,21 +320,25 @@
             <header>
                 <row id="48">
                     <cell id="49">
+                        <property name="paddingTop">10pt</property>
                         <label id="50">
                             <text-property name="text">category</text-property>
                         </label>
                     </cell>
                     <cell id="51">
+                        <property name="paddingTop">10pt</property>
                         <label id="52">
                             <text-property name="text">title</text-property>
                         </label>
                     </cell>
                     <cell id="53">
+                        <property name="paddingTop">10pt</property>
                         <label id="54">
                             <text-property name="text">name</text-property>
                         </label>
                     </cell>
                     <cell id="55">
+                        <property name="paddingTop">10pt</property>
                         <label id="56">
                             <text-property name="text">year</text-property>
                         </label>
@@ -332,21 +348,25 @@
             <detail>
                 <row id="57">
                     <cell id="58">
+                        <property name="paddingTop">10pt</property>
                         <data id="59">
                             <property name="resultSetColumn">category</property>
                         </data>
                     </cell>
                     <cell id="60">
+                        <property name="paddingTop">10pt</property>
                         <data id="61">
                             <property name="resultSetColumn">title</property>
                         </data>
                     </cell>
                     <cell id="62">
+                        <property name="paddingTop">10pt</property>
                         <data id="63">
                             <property name="resultSetColumn">name</property>
                         </data>
                     </cell>
                     <cell id="64">
+                        <property name="paddingTop">10pt</property>
                         <data id="65">
                             <property name="resultSetColumn">year</property>
                         </data>
@@ -355,24 +375,20 @@
             </detail>
             <footer>
                 <row id="66">
-                    <cell id="67"/>
-                    <cell id="68"/>
-                    <cell id="69"/>
-                    <cell id="70"/>
+                    <cell id="67">
+                        <property name="paddingTop">10pt</property>
+                    </cell>
+                    <cell id="68">
+                        <property name="paddingTop">10pt</property>
+                    </cell>
+                    <cell id="69">
+                        <property name="paddingTop">10pt</property>
+                    </cell>
+                    <cell id="70">
+                        <property name="paddingTop">10pt</property>
+                    </cell>
                 </row>
             </footer>
         </table>
-        <data id="86">
-            <property name="dataSet">Data Set Name</property>
-            <list-property name="boundDataColumns">
-                <structure>
-                    <property name="name">name</property>
-                    <text-property name="displayName">name</text-property>
-                    <expression name="expression" type="javascript">dataSetRow["name"]</expression>
-                    <property name="dataType">string</property>
-                </structure>
-            </list-property>
-            <property name="resultSetColumn">name</property>
-        </data>
     </body>
 </report>

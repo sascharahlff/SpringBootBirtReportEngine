@@ -18,6 +18,7 @@
 bin/
 logs/
 build/
+reports/*
 target/
 
 # Mobile Tools for Java (J2ME)

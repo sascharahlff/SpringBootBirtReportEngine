@@ -1,8 +1,9 @@
-package de.itemis.birt.report;
+package de.itemis.birt.service;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.util.Map;
+import java.util.UUID;
 import java.util.logging.Level;
 
 import javax.annotation.PostConstruct;
@@ -18,10 +19,10 @@ import org.eclipse.birt.report.engine.api.IReportRunnable;
 import org.eclipse.birt.report.engine.api.IRunAndRenderTask;
 import org.eclipse.birt.report.engine.api.PDFRenderOption;
 import org.eclipse.birt.report.engine.api.RenderOption;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-@Component
-public class ReportEngine {
+@Service
+public class ReportServiceImpl implements ReportService {
 	private static final String REPORTS_PATH = "src/main/resources/reports/";
 	private IReportEngine engine = null;
 
@@ -34,8 +35,7 @@ public class ReportEngine {
 		try {
 			Platform.startup(engineConfig);
 
-			IReportEngineFactory factory = (IReportEngineFactory) Platform
-					.createFactoryObject(IReportEngineFactory.EXTENSION_REPORT_ENGINE_FACTORY);
+			IReportEngineFactory factory = (IReportEngineFactory) Platform.createFactoryObject(IReportEngineFactory.EXTENSION_REPORT_ENGINE_FACTORY);
 			engine = factory.createReportEngine(engineConfig);
 			engine.changeLogLevel(Level.WARNING);
 		} catch (BirtException e) {
@@ -49,13 +49,15 @@ public class ReportEngine {
 		engine.destroy();
 		Platform.shutdown();
 	}
-	
-	public boolean createReport(final String reportFile, final String xml) {
-		if (reportExists(reportFile)) {
-			IReportRunnable report = getReport(REPORTS_PATH + reportFile);
+
+	@Override
+	public String createReport(String report, String xml) {
+		if (reportExists(report)) {
+			IReportRunnable reportDesign = getReport(REPORTS_PATH + report);
 			
-			if (report != null) {
-				IRunAndRenderTask task = engine.createRunAndRenderTask(report);
+			if (reportDesign != null) {
+				String outputFile = UUID.randomUUID().toString() +".pdf";
+				IRunAndRenderTask task = engine.createRunAndRenderTask(reportDesign);
 				
 				ByteArrayInputStream byteArray = new ByteArrayInputStream(xml.getBytes());
 				Map<String, ByteArrayInputStream> appContext = task.getAppContext();
@@ -63,20 +65,21 @@ public class ReportEngine {
 				
 				RenderOption renderOption = new PDFRenderOption();
 				renderOption.setOutputFormat(RenderOption.OUTPUT_FORMAT_PDF);
-				renderOption.setOutputFileName("blub.pdf");
+				renderOption.setOutputFileName("reports/"+ outputFile);
 
 				task.setRenderOption(renderOption);
 				
 				try {
 					task.run();
+					return outputFile;
 				} catch (EngineException e1) {
-					System.err.println("Report" + reportFile +" run failed.\n");
+					System.err.println("Report" + report +" run failed.\n");
 					System.err.println(e1.toString());
 				}
 			}
 		}
 		
-		return false;
+		return "";
 	}
 
 	private IReportRunnable getReport(String reportPath) {
