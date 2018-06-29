@@ -1,6 +1,7 @@
 buildscript {
 	ext {
 	    springBootVersion = "2.0.3.RELEASE"
+	    birtVersion = "4.4.2"
 	}
 
 	repositories {
@@ -21,9 +22,13 @@ repositories {
 }
 
 dependencies {
-	compile 'org.eclipse.birt.runtime:org.eclipse.birt.runtime:4.6.0-20160607'
+	compile 'org.eclipse.birt.runtime:org.eclipse.birt.runtime:' + birtVersion
 	compile 'org.springframework.boot:spring-boot-autoconfigure:' + springBootVersion
-	compile 'org.springframework.boot:spring-boot-starter-tomcat:' + springBootVersion
+	compile "org.springframework.boot:spring-boot-starter-web:" + springBootVersion
+	//compile 'org.springframework.boot:spring-boot-starter-tomcat:' + springBootVersion
 
+
+	testCompile 'junit:junit:4.12'
+	testCompile 'org.hamcrest:hamcrest-library:1.3'
 	testCompile 'org.springframework.boot:spring-boot-starter-test:' + springBootVersion	
 }

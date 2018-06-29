@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<library>
+	<name>Biff Tannen</name>
+	<data>
+		<book category="COOKING">
+			<title lang="en">Everyday Italian</title>
+			<author name="Giada De Laurentiis" country="it"/>
+			<year>2005</year>
+		</book>
+		<book category="CHILDREN">
+			<title lang="en">Harry Potter</title>
+			<author name="J K. Rowling" country="uk" />
+			<year>2005</year>
+		</book>
+		<book category="WEB">
+			<title lang="en">XQuery Kick Start</title> 
+			<author name="James McGovern" country="us" />
+			<author name="Per Bothner" country="us" />
+			<year>2004</year>
+		</book>
+		<book category="WEB">
+			<title lang="en">Learning XML</title>
+			<author name="Erik T. Ray" country="us" />
+			<year>2003</year>
+		</book>
+	</data>
+</library>
