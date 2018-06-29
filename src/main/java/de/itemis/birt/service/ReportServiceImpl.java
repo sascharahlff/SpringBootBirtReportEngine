@@ -23,14 +23,17 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class ReportServiceImpl implements ReportService {
-	private static final String REPORTS_PATH = "src/main/resources/reports/";
+	private static final String REPORT_PATH = "src/main/resources/reports/";
+	private static final String OUTPUT_PATH = "reports/";
+	private static final String LOG_PATH = "logs/";
+
 	private IReportEngine engine = null;
 
 	@PostConstruct
 	public void init() {
 		System.out.println("startup");
 		EngineConfig engineConfig = new EngineConfig();
-		engineConfig.setLogConfig("logs", Level.WARNING);
+		engineConfig.setLogConfig(LOG_PATH, Level.WARNING);
 
 		try {
 			Platform.startup(engineConfig);
@@ -52,34 +55,40 @@ public class ReportServiceImpl implements ReportService {
 
 	@Override
 	public String createReport(String report, String xml) {
-		if (reportExists(report)) {
-			IReportRunnable reportDesign = getReport(REPORTS_PATH + report);
-			
+		String reportPath = REPORT_PATH + report;
+		String outputPath = "";
+
+		if (reportExists(reportPath)) {
+			// Get report design
+			IReportRunnable reportDesign = getReport(reportPath);
+
 			if (reportDesign != null) {
-				String outputFile = UUID.randomUUID().toString() +".pdf";
+				// Unique pdf name
+				String outputFilePath = OUTPUT_PATH + UUID.randomUUID().toString() + RenderOption.OUTPUT_FORMAT_PDF;
 				IRunAndRenderTask task = engine.createRunAndRenderTask(reportDesign);
-				
+
+				// Override XML structure in report
 				ByteArrayInputStream byteArray = new ByteArrayInputStream(xml.getBytes());
 				Map<String, ByteArrayInputStream> appContext = task.getAppContext();
 				appContext.put("org.eclipse.datatools.enablement.oda.xml.inputStream", byteArray);
-				
+
+				// PDF name and location
 				RenderOption renderOption = new PDFRenderOption();
 				renderOption.setOutputFormat(RenderOption.OUTPUT_FORMAT_PDF);
-				renderOption.setOutputFileName("reports/"+ outputFile);
-
+				renderOption.setOutputFileName(outputFilePath);
 				task.setRenderOption(renderOption);
-				
+
 				try {
 					task.run();
-					return outputFile;
-				} catch (EngineException e1) {
-					System.err.println("Report" + report +" run failed.\n");
-					System.err.println(e1.toString());
+					outputPath = renderOption.getOutputFileName();
+				} catch (EngineException e) {
+					System.err.println("Report" + report + " run failed.\n");
+					System.err.println(e.toString());
 				}
 			}
 		}
-		
-		return "";
+
+		return outputPath;
 	}
 
 	private IReportRunnable getReport(String reportPath) {
@@ -92,18 +101,17 @@ public class ReportServiceImpl implements ReportService {
 
 	private boolean reportExists(final String report) {
 		boolean exists = true;
-		
+
 		if (report == null || report.isEmpty()) {
 			exists = false;
-		}
-		else {
-			File reportFile = new File(REPORTS_PATH + report);
-			
+		} else {
+			File reportFile = new File(report);
+
 			if (!reportFile.exists()) {
 				exists = false;
 			}
 		}
-		
+
 		return exists;
 	}
 }
