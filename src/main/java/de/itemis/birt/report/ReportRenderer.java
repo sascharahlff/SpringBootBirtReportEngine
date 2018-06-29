@@ -8,7 +8,7 @@ public class ReportRenderer {
 	@Autowired
 	ReportEngine reportEngine;
 	
-	public void render() {
-		reportEngine.doStuff();
+	public void render(final String report, final String xml) {
+		reportEngine.createReport(report, xml);
 	}
 }

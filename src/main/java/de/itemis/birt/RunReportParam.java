@@ -1,7 +1,6 @@
 package de.itemis.birt;
 
 import java.io.ByteArrayInputStream;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.birt.core.framework.Platform;

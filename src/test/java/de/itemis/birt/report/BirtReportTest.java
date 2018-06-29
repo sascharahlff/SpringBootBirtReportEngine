@@ -16,7 +16,14 @@ public class BirtReportTest {
 	
 	@Test
 	public void reportTest() {
-		reportRenderer.render();
+		String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+		xml += "<library>"
+				+ "<name>Biff Tannen</name><data>"
+				+ "<book category='FOO'><title lang='en'>BIRT ist kein Geschenk</title><author name='Sascha Rahlff' country='it'/><year>2015</year></book>"
+				+ "<book category='BAR'><title lang='en'>BIRT suxx ...</title><author name='Biff Tannen' country='uk' /><year>2016</year></book>"
+				+ "<book category='BLUB'><title lang='en'>BIRT kann XML Datasets</title><author name='James McGovern' country='us' /><year>2017</year></book>"
+				+ "</data></library>";
+		reportRenderer.render("new.rptdesign", xml);
 //		ReportEngine engine = new ReportEngine();
 //		engine.doStuff();
 	}
