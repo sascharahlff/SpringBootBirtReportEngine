@@ -24,7 +24,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class ReportServiceImpl implements ReportService {
 	private static final String REPORT_PATH = "src/main/resources/reports/";
-	private static final String OUTPUT_PATH = "reports/";
+	private static final String OUTPUT_PATH = "src/main/resources/reports/";
 	private static final String LOG_PATH = "logs/";
 
 	private IReportEngine engine = null;
@@ -56,7 +56,7 @@ public class ReportServiceImpl implements ReportService {
 	@Override
 	public String createReport(String report, String xml) {
 		String reportPath = REPORT_PATH + report;
-		String outputPath = "";
+		String outputFile = "";
 
 		if (reportExists(reportPath)) {
 			// Get report design
@@ -64,7 +64,7 @@ public class ReportServiceImpl implements ReportService {
 
 			if (reportDesign != null) {
 				// Unique pdf name
-				String outputFilePath = OUTPUT_PATH + UUID.randomUUID().toString() + RenderOption.OUTPUT_FORMAT_PDF;
+				String fileName = UUID.randomUUID().toString() +"."+ RenderOption.OUTPUT_FORMAT_PDF;
 				IRunAndRenderTask task = engine.createRunAndRenderTask(reportDesign);
 
 				// Override XML structure in report
@@ -75,12 +75,12 @@ public class ReportServiceImpl implements ReportService {
 				// PDF name and location
 				RenderOption renderOption = new PDFRenderOption();
 				renderOption.setOutputFormat(RenderOption.OUTPUT_FORMAT_PDF);
-				renderOption.setOutputFileName(outputFilePath);
+				renderOption.setOutputFileName(OUTPUT_PATH + fileName);
 				task.setRenderOption(renderOption);
 
 				try {
 					task.run();
-					outputPath = renderOption.getOutputFileName();
+					outputFile = fileName;
 				} catch (EngineException e) {
 					System.err.println("Report" + report + " run failed.\n");
 					System.err.println(e.toString());
@@ -88,7 +88,7 @@ public class ReportServiceImpl implements ReportService {
 			}
 		}
 
-		return outputPath;
+		return outputFile;
 	}
 
 	private IReportRunnable getReport(String reportPath) {
