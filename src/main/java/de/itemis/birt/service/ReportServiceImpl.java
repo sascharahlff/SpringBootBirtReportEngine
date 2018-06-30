@@ -24,7 +24,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class ReportServiceImpl implements ReportService {
 	private static final String REPORT_PATH = "src/main/resources/reports/";
-	private static final String OUTPUT_PATH = "src/main/resources/reports/";
+	private static final String OUTPUT_PATH = "./reports/";
 	private static final String LOG_PATH = "logs/";
 
 	private IReportEngine engine = null;

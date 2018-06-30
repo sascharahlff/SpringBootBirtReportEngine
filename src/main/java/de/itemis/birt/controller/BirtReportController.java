@@ -1,9 +1,11 @@
 package de.itemis.birt.controller;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -18,6 +20,7 @@ import de.itemis.birt.service.ReportService;
 @RestController
 @RequestMapping("/report")
 public class BirtReportController {
+	public static final String REPORT_PATH = "./reports/";
 	public static final String CREATE_REPORT = "/create";
 	public static final String GET_REPORT = "/get";
 	public static final String PARAM_REPORT = "report";
@@ -65,18 +68,20 @@ public class BirtReportController {
 			throw new IllegalArgumentException("Parameter 'report' can not be null or empty");
 		}
 		else {
-			ClassPathResource pdfFile = new ClassPathResource("reports/"+ report);
-			
-			if (!pdfFile.exists()) {
+			File reportFile = new File(REPORT_PATH + report);
+						
+			if (!reportFile.exists()) {
 				throw new IllegalArgumentException("Report '"+ report +"' does not exist");
 			}
 			else {
+				InputStream reportStream = new FileInputStream(reportFile);
+
 			    return ResponseEntity
 			            .ok()
 			            .headers(headers)
-			            .contentLength(pdfFile.contentLength())
+			            .contentLength(reportFile.length())
 			            .contentType(MediaType.parseMediaType("application/octet-stream"))
-			            .body(new InputStreamResource(pdfFile.getInputStream()));
+			            .body(new InputStreamResource(reportStream));
 			}
 		}
  	}
