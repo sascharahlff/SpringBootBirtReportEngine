@@ -46,7 +46,7 @@ public class BirtReportTest {
 
 	@Test
 	public void reportRestServiceTest() throws Exception {
-		mockMvc.perform(post(BirtReportController.CREATE_REPORT).param("report", "new.rptdesign").param("xml", sampleXml))
+		mockMvc.perform(post("/report" + BirtReportController.CREATE_REPORT).param("report", "new.rptdesign").param("xml", sampleXml))
 				.andExpect(status().isOk()).andExpect(content().string(containsString(".pdf")));
 	}
 }
