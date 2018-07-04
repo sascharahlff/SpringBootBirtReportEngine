@@ -1,6 +1,5 @@
 package de.itemis.birt.controller;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +26,7 @@ public class BirtReportController {
 	ReportService reportService;
 
 	@RequestMapping(value = CREATE_REPORT, method = { RequestMethod.GET, RequestMethod.POST })
-	public String createReport(@RequestParam(PARAM_REPORT) final String report, @RequestParam(PARAM_REPORT_XML) final String xml) {
+	public String createReport(@RequestParam(PARAM_REPORT) final String report, @RequestParam(PARAM_REPORT_XML) final String xml) throws FileNotFoundException {
 		String fileName = "";
 		
 		if (report == null || report.isEmpty()) {

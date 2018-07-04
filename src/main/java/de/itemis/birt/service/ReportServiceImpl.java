@@ -22,36 +22,24 @@ import org.eclipse.birt.report.engine.api.IReportRunnable;
 import org.eclipse.birt.report.engine.api.IRunAndRenderTask;
 import org.eclipse.birt.report.engine.api.PDFRenderOption;
 import org.eclipse.birt.report.engine.api.RenderOption;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-
 @Service
 public class ReportServiceImpl implements ReportService {
+	private static final String LOG_PATH = "logs/";
+
 	@Value("${report.input}")
 	private String REPORT_PATH;
 
 	@Value("${report.output}")
 	private String OUTPUT_PATH;
 
-	//private static final String REPORT_PATH = "classpath:reports/";
-	//private static final String REPORT_PATH = "/Users/sascha/repos/SpringBootBirtReportEngine/reports/";
-	//private static final String REPORT_PATH = "/Users/sascha/foo/";
-	//private static final String REPORT_PATH = "/Users/sascha/repos/SpringBootBirtReportEngine/reports/";
-	//private static final String OUTPUT_PATH = "/Users/sascha/repos/SpringBootBirtReportEngine/reports/";
-	//private static final String OUTPUT_PATH = "/Users/sascha/foo/";
-	private static final String LOG_PATH = "logs/";
-
 	private IReportEngine engine = null;
-	@Autowired
-	private ResourceLoader resourceLoader;
 	
 	@PostConstruct
 	public void init() {
@@ -62,7 +50,8 @@ public class ReportServiceImpl implements ReportService {
 		try {
 			Platform.startup(engineConfig);
 
-			IReportEngineFactory factory = (IReportEngineFactory) Platform.createFactoryObject(IReportEngineFactory.EXTENSION_REPORT_ENGINE_FACTORY);
+			IReportEngineFactory factory = (IReportEngineFactory) Platform
+					.createFactoryObject(IReportEngineFactory.EXTENSION_REPORT_ENGINE_FACTORY);
 			engine = factory.createReportEngine(engineConfig);
 			engine.changeLogLevel(Level.WARNING);
 		} catch (BirtException e) {
@@ -79,50 +68,53 @@ public class ReportServiceImpl implements ReportService {
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public String createReport(String report, String xml) {
+	public String createReport(String report, String xml) throws FileNotFoundException {
 		String reportPath = REPORT_PATH + report;
 		String outputFile = "";
 
-		//if (reportExists(reportPath)) {
-			// Get report design
-			IReportRunnable reportDesign = getReportDesign(reportPath);
+		System.out.println(OUTPUT_PATH);
+		System.out.println(REPORT_PATH);
+		
+		// Get report design
+		IReportRunnable reportDesign = getReportDesign(reportPath);
 
-			if (reportDesign != null) {
-				// Unique pdf name
-				String fileName = UUID.randomUUID().toString() +"."+ RenderOption.OUTPUT_FORMAT_PDF;
-				IRunAndRenderTask task = engine.createRunAndRenderTask(reportDesign);
+		if (reportDesign == null) {
+			throw new FileNotFoundException("Report Design '" + report + "' does not exist");
+		}
+		else {
+			// Unique pdf name
+			String fileName = UUID.randomUUID().toString() + "." + RenderOption.OUTPUT_FORMAT_PDF;
+			IRunAndRenderTask task = engine.createRunAndRenderTask(reportDesign);
 
-				// Override XML structure in report
-				ByteArrayInputStream byteArray = new ByteArrayInputStream(xml.getBytes());
-				Map<String, ByteArrayInputStream> appContext = task.getAppContext();
-				appContext.put("org.eclipse.datatools.enablement.oda.xml.inputStream", byteArray);
+			// Override XML structure in report
+			ByteArrayInputStream byteArray = new ByteArrayInputStream(xml.getBytes());
+			Map<String, ByteArrayInputStream> appContext = task.getAppContext();
+			appContext.put("org.eclipse.datatools.enablement.oda.xml.inputStream", byteArray);
 
-				// PDF name and location
-				RenderOption renderOption = new PDFRenderOption();
-				renderOption.setOutputFormat(RenderOption.OUTPUT_FORMAT_PDF);
-				renderOption.setOutputFileName(OUTPUT_PATH + fileName);
-				task.setRenderOption(renderOption);
+			// PDF name and location
+			RenderOption renderOption = new PDFRenderOption();
+			renderOption.setOutputFormat(RenderOption.OUTPUT_FORMAT_PDF);
+			renderOption.setOutputFileName(OUTPUT_PATH + fileName);
+			task.setRenderOption(renderOption);
 
-				try {
-					task.run();
-					outputFile = fileName;
-				} catch (EngineException e) {
-					System.err.println("Report" + report + " run failed.\n");
-					System.err.println(e.toString());
-				}
+			try {
+				task.run();
+				outputFile = fileName;
+			} catch (EngineException e) {
+				System.err.println("Report" + report + " run failed.\n");
+				System.err.println(e.toString());
 			}
-		//}
+		}
 
 		return outputFile;
 	}
-	
 
 	@Override
 	public ResponseEntity<InputStreamResource> getReport(String report) throws FileNotFoundException {
 		File reportFile = new File(OUTPUT_PATH + report);
-		
+
 		if (!reportFile.exists()) {
-			throw new IllegalArgumentException("Report '"+ report +"' does not exist");
+			throw new FileNotFoundException("Report '" + report + "' does not exist");
 		}
 		else {
 			HttpHeaders headers = new HttpHeaders();
@@ -132,26 +124,18 @@ public class ReportServiceImpl implements ReportService {
 			headers.add("content-disposition", "attachment; filename=" + report);
 
 			InputStream reportStream = new FileInputStream(reportFile);
-			
-			return ResponseEntity
-					.ok()
-					.headers(headers)
-					.contentLength(reportFile.length())
+
+			return ResponseEntity.ok().headers(headers).contentLength(reportFile.length())
 					.contentType(MediaType.parseMediaType(MediaType.APPLICATION_OCTET_STREAM_VALUE))
 					.body(new InputStreamResource(reportStream));
 		}
 	}
-	
+
 	private IReportRunnable getReportDesign(String reportPath) {
 		try {
 			return engine.openReportDesign(reportPath);
 		} catch (EngineException e) {
 			return null;
 		}
-	}
-	
-	private boolean reportExists(final String report) {
-		Resource resource = resourceLoader.getResource(REPORT_PATH);
-		return resource.exists();
 	}
 }

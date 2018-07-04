@@ -7,6 +7,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.io.FileNotFoundException;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,13 +35,13 @@ public class BirtReportTest {
 	private MockMvc mockMvc;
 
 	@Test
-	public void reportNotFoundTest() {
+	public void reportNotFoundTest() throws FileNotFoundException {
 		String pdf = reportService.createReport("test.rptdesign", sampleXml);
 		assertEquals("", pdf);
 	}
 
 	@Test
-	public void reportTest() {
+	public void reportTest() throws FileNotFoundException {
 		String pdf = reportService.createReport("new.rptdesign", sampleXml);
 		assertNotEquals(pdf, "");
 	}
