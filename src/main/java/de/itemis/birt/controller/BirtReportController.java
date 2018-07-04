@@ -1,13 +1,10 @@
 package de.itemis.birt.controller;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.FileNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,8 +27,7 @@ public class BirtReportController {
 	ReportService reportService;
 
 	@RequestMapping(value = CREATE_REPORT, method = { RequestMethod.GET, RequestMethod.POST })
-	public String createReport(@RequestParam(PARAM_REPORT) final String report,
-			@RequestParam(PARAM_REPORT_XML) final String xml) {
+	public String createReport(@RequestParam(PARAM_REPORT) final String report, @RequestParam(PARAM_REPORT_XML) final String xml) {
 		String fileName = "";
 		
 		if (report == null || report.isEmpty()) {
@@ -52,32 +48,12 @@ public class BirtReportController {
 	}
 
 	@RequestMapping(value = GET_REPORT, method = RequestMethod.GET, produces = MediaType.APPLICATION_PDF_VALUE)
-	public ResponseEntity<InputStreamResource> getReport(@RequestParam(PARAM_REPORT) final String report) throws IOException {
-		HttpHeaders headers = new HttpHeaders();
-		headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
-		headers.add("Pragma", "no-cache");
-		headers.add("Expires", "0");
-		headers.add("content-disposition", "attachment; filename=" + report);
-
+	public ResponseEntity<InputStreamResource> getReport(@RequestParam(PARAM_REPORT) final String report) throws FileNotFoundException, IllegalArgumentException {
 		if (report == null || report.isEmpty()) {
 			throw new IllegalArgumentException("Parameter 'report' can not be null or empty");
 		}
 		else {
-			File reportFile = new File(REPORT_PATH + report);
-						
-			if (!reportFile.exists()) {
-				throw new IllegalArgumentException("Report '"+ report +"' does not exist");
-			}
-			else {
-				InputStream reportStream = new FileInputStream(reportFile);
-
-			    return ResponseEntity
-			            .ok()
-			            .headers(headers)
-			            .contentLength(reportFile.length())
-			            .contentType(MediaType.parseMediaType(MediaType.APPLICATION_OCTET_STREAM_VALUE))
-			            .body(new InputStreamResource(reportStream));
-			}
+			return reportService.getReport(report);
 		}
  	}
 }

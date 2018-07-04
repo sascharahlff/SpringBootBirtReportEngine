@@ -1,6 +1,10 @@
 package de.itemis.birt.service;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -20,8 +24,12 @@ import org.eclipse.birt.report.engine.api.PDFRenderOption;
 import org.eclipse.birt.report.engine.api.RenderOption;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 
@@ -77,7 +85,7 @@ public class ReportServiceImpl implements ReportService {
 
 		//if (reportExists(reportPath)) {
 			// Get report design
-			IReportRunnable reportDesign = getReport(reportPath);
+			IReportRunnable reportDesign = getReportDesign(reportPath);
 
 			if (reportDesign != null) {
 				// Unique pdf name
@@ -107,15 +115,41 @@ public class ReportServiceImpl implements ReportService {
 
 		return outputFile;
 	}
+	
 
-	private IReportRunnable getReport(String reportPath) {
+	@Override
+	public ResponseEntity<InputStreamResource> getReport(String report) throws FileNotFoundException {
+		File reportFile = new File(OUTPUT_PATH + report);
+		
+		if (!reportFile.exists()) {
+			throw new IllegalArgumentException("Report '"+ report +"' does not exist");
+		}
+		else {
+			HttpHeaders headers = new HttpHeaders();
+			headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
+			headers.add("Pragma", "no-cache");
+			headers.add("Expires", "0");
+			headers.add("content-disposition", "attachment; filename=" + report);
+
+			InputStream reportStream = new FileInputStream(reportFile);
+			
+			return ResponseEntity
+					.ok()
+					.headers(headers)
+					.contentLength(reportFile.length())
+					.contentType(MediaType.parseMediaType(MediaType.APPLICATION_OCTET_STREAM_VALUE))
+					.body(new InputStreamResource(reportStream));
+		}
+	}
+	
+	private IReportRunnable getReportDesign(String reportPath) {
 		try {
 			return engine.openReportDesign(reportPath);
 		} catch (EngineException e) {
 			return null;
 		}
 	}
-
+	
 	private boolean reportExists(final String report) {
 		Resource resource = resourceLoader.getResource(REPORT_PATH);
 		return resource.exists();
