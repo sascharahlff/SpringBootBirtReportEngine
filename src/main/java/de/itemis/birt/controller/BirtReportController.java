@@ -25,20 +25,15 @@ public class BirtReportController {
 	public static final String GET_REPORT = "/get";
 	public static final String PARAM_REPORT = "report";
 	public static final String PARAM_REPORT_XML = "xml";
-
+	
 	@Autowired
 	ReportService reportService;
-
-	@RequestMapping(value = "/", method = RequestMethod.GET)
-	public String index() {
-		return "Hello World";
-	}
 
 	@RequestMapping(value = CREATE_REPORT, method = { RequestMethod.GET, RequestMethod.POST })
 	public String createReport(@RequestParam(PARAM_REPORT) final String report,
 			@RequestParam(PARAM_REPORT_XML) final String xml) {
 		String fileName = "";
-
+		
 		if (report == null || report.isEmpty()) {
 			throw new IllegalArgumentException("Parameter 'report' can not be null or empty");
 		}
@@ -56,7 +51,7 @@ public class BirtReportController {
 		return fileName;
 	}
 
-	@RequestMapping(value = GET_REPORT, method = RequestMethod.GET, produces = "application/pdf")
+	@RequestMapping(value = GET_REPORT, method = RequestMethod.GET, produces = MediaType.APPLICATION_PDF_VALUE)
 	public ResponseEntity<InputStreamResource> getReport(@RequestParam(PARAM_REPORT) final String report) throws IOException {
 		HttpHeaders headers = new HttpHeaders();
 		headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
@@ -80,7 +75,7 @@ public class BirtReportController {
 			            .ok()
 			            .headers(headers)
 			            .contentLength(reportFile.length())
-			            .contentType(MediaType.parseMediaType("application/octet-stream"))
+			            .contentType(MediaType.parseMediaType(MediaType.APPLICATION_OCTET_STREAM_VALUE))
 			            .body(new InputStreamResource(reportStream));
 			}
 		}

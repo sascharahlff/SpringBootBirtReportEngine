@@ -1,2 +1,5 @@
 server:
   port: 8080
+report:
+  input: '/Users/sascha/foo/'
+  output: '/Users/sascha/foo/'

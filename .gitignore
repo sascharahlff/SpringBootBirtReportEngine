@@ -18,6 +18,7 @@
 bin/
 logs/
 build/
+gradle/
 Reports/**
 target/
 

@@ -1,7 +1,6 @@
 package de.itemis.birt.service;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -19,16 +18,33 @@ import org.eclipse.birt.report.engine.api.IReportRunnable;
 import org.eclipse.birt.report.engine.api.IRunAndRenderTask;
 import org.eclipse.birt.report.engine.api.PDFRenderOption;
 import org.eclipse.birt.report.engine.api.RenderOption;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
+
 
 @Service
 public class ReportServiceImpl implements ReportService {
-	private static final String REPORT_PATH = "src/main/resources/reports/";
-	private static final String OUTPUT_PATH = "./reports/";
+	@Value("${report.input}")
+	private String REPORT_PATH;
+
+	@Value("${report.output}")
+	private String OUTPUT_PATH;
+
+	//private static final String REPORT_PATH = "classpath:reports/";
+	//private static final String REPORT_PATH = "/Users/sascha/repos/SpringBootBirtReportEngine/reports/";
+	//private static final String REPORT_PATH = "/Users/sascha/foo/";
+	//private static final String REPORT_PATH = "/Users/sascha/repos/SpringBootBirtReportEngine/reports/";
+	//private static final String OUTPUT_PATH = "/Users/sascha/repos/SpringBootBirtReportEngine/reports/";
+	//private static final String OUTPUT_PATH = "/Users/sascha/foo/";
 	private static final String LOG_PATH = "logs/";
 
 	private IReportEngine engine = null;
-
+	@Autowired
+	private ResourceLoader resourceLoader;
+	
 	@PostConstruct
 	public void init() {
 		System.out.println("startup");
@@ -54,11 +70,12 @@ public class ReportServiceImpl implements ReportService {
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public String createReport(String report, String xml) {
 		String reportPath = REPORT_PATH + report;
 		String outputFile = "";
 
-		if (reportExists(reportPath)) {
+		//if (reportExists(reportPath)) {
 			// Get report design
 			IReportRunnable reportDesign = getReport(reportPath);
 
@@ -86,7 +103,7 @@ public class ReportServiceImpl implements ReportService {
 					System.err.println(e.toString());
 				}
 			}
-		}
+		//}
 
 		return outputFile;
 	}
@@ -100,18 +117,7 @@ public class ReportServiceImpl implements ReportService {
 	}
 
 	private boolean reportExists(final String report) {
-		boolean exists = true;
-
-		if (report == null || report.isEmpty()) {
-			exists = false;
-		} else {
-			File reportFile = new File(report);
-
-			if (!reportFile.exists()) {
-				exists = false;
-			}
-		}
-
-		return exists;
+		Resource resource = resourceLoader.getResource(REPORT_PATH);
+		return resource.exists();
 	}
 }

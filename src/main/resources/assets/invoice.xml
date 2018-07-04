@@ -1,14 +1,23 @@
 <?xml version="1.0"?> 
 <invoice>
-	<name>Marty McFly</name>
+	<address>
+		<name>Marty McFly</name>
+		<street>Hill Valley Road 123</street>
+		<zipCode>12345</zipCode>
+		<city>Hill Valley</city>
+	</address>
 	<positions>
 		<position>
+			<productNo>B0747LZTM8</productNo>
 			<name>Product 1</name>
+			<quantity>1</quantity>
 			<price>1.23</price>
 		</position>
 		<position>
+			<productNo>B074ZPSRQR</productNo>
 			<name>Product 2</name>
-			<price>12.34</price>
+			<quantity>2</quantity>
+			<price>2.34</price>
 		</position>
 	</positions>
 </invoice>
