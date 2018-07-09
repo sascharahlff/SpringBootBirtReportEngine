@@ -34,10 +34,10 @@ public class BirtReportTest {
 	@Autowired
 	private MockMvc mockMvc;
 
-	@Test
+	@Test(expected = FileNotFoundException.class)
 	public void reportNotFoundTest() throws FileNotFoundException {
 		String pdf = reportService.createReport("test.rptdesign", sampleXml);
-		assertEquals("", pdf);
+		assertEquals(pdf, "");
 	}
 
 	@Test
@@ -45,7 +45,7 @@ public class BirtReportTest {
 		String pdf = reportService.createReport("new.rptdesign", sampleXml);
 		assertNotEquals(pdf, "");
 	}
-
+	
 	@Test
 	public void reportRestServiceTest() throws Exception {
 		mockMvc.perform(post("/report" + BirtReportController.CREATE_REPORT).param("report", "new.rptdesign").param("xml", sampleXml))

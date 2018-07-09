@@ -71,9 +71,6 @@ public class ReportServiceImpl implements ReportService {
 	public String createReport(String report, String xml) throws FileNotFoundException {
 		String reportPath = REPORT_PATH + report;
 		String outputFile = "";
-
-		System.out.println(OUTPUT_PATH);
-		System.out.println(REPORT_PATH);
 		
 		// Get report design
 		IReportRunnable reportDesign = getReportDesign(reportPath);

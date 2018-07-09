@@ -1,5 +1,5 @@
 server:
   port: 8081
 report:
-  input: '/Users/sascha/bla/'
-  output: '/Users/sascha/bla/'
+  input: '/Users/sascha/blub/'
+  output: '/Users/sascha/blub/'
