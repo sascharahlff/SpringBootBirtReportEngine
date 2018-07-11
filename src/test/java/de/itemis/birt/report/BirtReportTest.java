@@ -2,13 +2,11 @@ package de.itemis.birt.report;
 
 import static org.junit.Assert.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.Base64;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,10 +27,13 @@ import de.itemis.birt.controller.BirtReportController;
 import de.itemis.birt.service.ReportService;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = { Application.class, WebsocketSourceConfiguration.class,
-		BirtReportController.class }, webEnvironment = WebEnvironment.RANDOM_PORT)
+@SpringBootTest(classes = { Application.class, WebsocketSourceConfiguration.class, BirtReportController.class }, webEnvironment = WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 public class BirtReportTest {
+	private static final String SAMPLE_IMAGE1_PATH = "classpath:assets/images/hasi.png";
+	private static final String SAMPLE_IMAGE2_PATH = "classpath:assets/images/cozmo1.png";
+	private static final String SAMPLE_IMAGE3_PATH = "classpath:assets/images/cozmo2.png";
+	
 	// private String sampleXml = "<?xml version=\"1.0\"
 	// encoding=\"UTF-8\"?><library><name>Biff Tannen</name></library>";
 
@@ -44,40 +45,37 @@ public class BirtReportTest {
 
 	// @Test
 	public void createTempFolder() throws Exception {
-		MvcResult result = mockMvc.perform(post("/report/component")).andExpect(status().is(201)).andReturn();
-		String location = result.getResponse().getHeader("Location");
-		System.out.println("location: " + location);
-
-		// http://localhost/report/component/6676d00e-7da8-4579-9d5e-aeed9bdea947/resources
-
-		// .andExpect(status().is(201));
-
-		// fe045882-8a3f-4aa8-937a-35d8570c93e7
+		mockMvc.perform(post("/report/component")).andExpect(status().is(HttpStatus.CREATED.value()));
 	}
 
 	@Test
 	public void uploadFileToTempFolder() throws Exception {
-		MvcResult result = mockMvc.perform(post("/report/component")).andExpect(status().is(201)).andReturn();
+		MvcResult result = mockMvc.perform(post("/report/component")).andExpect(status().is(HttpStatus.CREATED.value())).andReturn();
 		String location = result.getResponse().getHeader("Location");
 
-		File file = ResourceUtils.getFile("classpath:assets/images/hasi.png");
-		assertEquals(true, file.exists());	
-		//byte[] base64image = Base64.getEncoder().encode(loadFileAsBytesArray(file));
-		MockMultipartFile firstFile = new MockMultipartFile("data", "hasi.png", "text/plain", loadFileAsBytesArray(file));
+		File file1 = ResourceUtils.getFile(SAMPLE_IMAGE1_PATH);
+		assertEquals(true, file1.exists());
+		
+		File file2 = ResourceUtils.getFile(SAMPLE_IMAGE2_PATH);
+		assertEquals(true, file2.exists());
 
-        mockMvc.perform(MockMvcRequestBuilders.multipart(location)
-                        .file(firstFile))
-                    .andExpect(status().is(HttpStatus.CREATED.value()));
+		File file3 = ResourceUtils.getFile(SAMPLE_IMAGE3_PATH);
+		assertEquals(true, file3.exists());
+
+		MockMultipartFile mFile1 = new MockMultipartFile("files", file1.getName(), "image/png", loadFileAsBytesArray(file1));
+		MockMultipartFile mFile2 = new MockMultipartFile("files", file2.getName(), "image/png", loadFileAsBytesArray(file2));
+		MockMultipartFile mFile3 = new MockMultipartFile("files", file3.getName(), "image/png", loadFileAsBytesArray(file3));
+
+		mockMvc.perform(MockMvcRequestBuilders.multipart(location).file(mFile1).file(mFile2).file(mFile3)).andExpect(status().is(HttpStatus.CREATED.value()));
 	}
-	
-    public static byte[] loadFileAsBytesArray(File file) throws Exception {
-    	 
-        int length = (int) file.length();
-        BufferedInputStream reader = new BufferedInputStream(new FileInputStream(file));
-        byte[] bytes = new byte[length];
-        reader.read(bytes, 0, length);
-        reader.close();
-        return bytes;
- 
-    }
+
+	public static byte[] loadFileAsBytesArray(File file) throws Exception {
+		BufferedInputStream reader = new BufferedInputStream(new FileInputStream(file));
+		int length = (int) file.length();
+		byte[] bytes = new byte[length];
+		reader.read(bytes, 0, length);
+		reader.close();
+
+		return bytes;
+	}
 }
