@@ -53,6 +53,7 @@ public class BirtReportController {
 		for (MultipartFile mFile : files) {
 			File file = new File("./reports/temp/" + uuid + "/" + mFile.getOriginalFilename());
 			FileOutputStream fos = null;
+			
 			try {
 				fos = new FileOutputStream(file);
 				fos.write(mFile.getBytes());
