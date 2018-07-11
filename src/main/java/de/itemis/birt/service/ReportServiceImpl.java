@@ -4,7 +4,10 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -40,7 +43,7 @@ public class ReportServiceImpl implements ReportService {
 	private String OUTPUT_PATH;
 
 	private IReportEngine engine = null;
-	
+
 	@PostConstruct
 	public void init() {
 		System.out.println("startup");
@@ -71,20 +74,35 @@ public class ReportServiceImpl implements ReportService {
 	public String createReport(String report, String xml) throws FileNotFoundException {
 		String reportPath = REPORT_PATH + report;
 		String outputFile = "";
-		
+
+		// File file = new
+		// File("/Users/sascha/repos/SpringBootBirtReportEngine/src/main/resources/assets/bsh.xml");
+
+		// byte[] encoded = null;
+		// try {
+		// encoded =
+		// Files.readAllBytes(Paths.get("/Users/sascha/repos/SpringBootBirtReportEngine/src/main/resources/assets/bsh.xml"));
+		// String s = new String(encoded, "UTF-8");
+		// System.out.println(s);
+		// } catch (IOException e1) {
+		// // TODO Auto-generated catch block
+		// e1.printStackTrace();
+		// }
+
 		// Get report design
 		IReportRunnable reportDesign = getReportDesign(reportPath);
 
 		if (reportDesign == null) {
 			throw new FileNotFoundException("Report Design '" + report + "' does not exist");
-		}
-		else {
+		} else {
 			// Unique pdf name
-			String fileName = UUID.randomUUID().toString() + "." + RenderOption.OUTPUT_FORMAT_PDF;
+			// TODO String fileName = UUID.randomUUID().toString() + "." + RenderOption.OUTPUT_FORMAT_PDF;
+			String fileName = "result." + RenderOption.OUTPUT_FORMAT_PDF;
 			IRunAndRenderTask task = engine.createRunAndRenderTask(reportDesign);
 
 			// Override XML structure in report
 			ByteArrayInputStream byteArray = new ByteArrayInputStream(xml.getBytes());
+			//ByteArrayInputStream byteArray = new ByteArrayInputStream(encoded);
 			Map<String, ByteArrayInputStream> appContext = task.getAppContext();
 			appContext.put("org.eclipse.datatools.enablement.oda.xml.inputStream", byteArray);
 
@@ -112,8 +130,7 @@ public class ReportServiceImpl implements ReportService {
 
 		if (!reportFile.exists()) {
 			throw new FileNotFoundException("Report '" + report + "' does not exist");
-		}
-		else {
+		} else {
 			HttpHeaders headers = new HttpHeaders();
 			headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
 			headers.add("Pragma", "no-cache");

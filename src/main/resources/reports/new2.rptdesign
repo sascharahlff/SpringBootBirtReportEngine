@@ -151,9 +151,6 @@
         </simple-master-page>
     </page-setup>
     <body>
-        <label id="89">
-            <text-property name="text">Test 1</text-property>
-        </label>
         <data id="86">
             <property name="dataSet">Data Set Name</property>
             <list-property name="boundDataColumns">
