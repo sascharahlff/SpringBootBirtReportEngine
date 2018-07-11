@@ -27,7 +27,8 @@ dependencies {
 	compile 'org.springframework.boot:spring-boot-autoconfigure:' + springBootVersion
 	compile "org.springframework.boot:spring-boot-starter-web:" + springBootVersion
 	//compile 'org.springframework.boot:spring-boot-starter-tomcat:' + springBootVersion
-
+	// https://mvnrepository.com/artifact/commons-fileupload/commons-fileupload
+	compile group: 'commons-fileupload', name: 'commons-fileupload', version: '1.2'
 
 	testCompile 'junit:junit:4.12'
 	testCompile 'org.hamcrest:hamcrest-library:1.3'
