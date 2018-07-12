@@ -1,4 +1,4 @@
-package de.itemis.birt.report;
+package com.bshg.plc.component.report.controller;
 
 import static org.junit.Assert.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -22,9 +22,9 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.util.ResourceUtils;
 
-import de.itemis.birt.Application;
-import de.itemis.birt.controller.BirtReportController;
-import de.itemis.birt.service.ReportService;
+import com.bshg.plc.component.report.Application;
+import com.bshg.plc.component.report.controller.BirtReportController;
+import com.bshg.plc.component.report.service.ReportService;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = { Application.class, WebsocketSourceConfiguration.class, BirtReportController.class }, webEnvironment = WebEnvironment.RANDOM_PORT)

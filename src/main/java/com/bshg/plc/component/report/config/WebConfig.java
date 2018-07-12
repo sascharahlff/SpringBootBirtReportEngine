@@ -1,4 +1,4 @@
-package de.itemis.birt.config;
+package com.bshg.plc.component.report.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

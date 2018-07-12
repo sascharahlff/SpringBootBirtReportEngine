@@ -1,4 +1,4 @@
-package de.itemis.birt.controller;
+package com.bshg.plc.component.report.controller;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -10,6 +10,7 @@ import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -18,24 +19,24 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import de.itemis.birt.service.ReportService;
+import com.bshg.plc.component.report.service.ReportService;
 
 @RestController
 @RequestMapping("/report")
 public class BirtReportController {
 	public static final String COMPONENT_PATH = "/component";
 	public static final String COMPONENT_UUID_PATH = "/component/{uuid}/resources";
+	public static final String UPLOAD_PATH = "./reports/temp/";
 
 	@Autowired
 	ReportService reportService;
 
-	@RequestMapping(value = COMPONENT_PATH, consumes = MediaType.ALL_VALUE, method = RequestMethod.POST)
+	@PostMapping(value = COMPONENT_PATH, consumes = MediaType.ALL_VALUE)
 	public ResponseEntity<Object> createTempFolder(HttpServletRequest request) throws FileNotFoundException {
 		String uuid = UUID.randomUUID().toString();
 
@@ -44,31 +45,42 @@ public class BirtReportController {
 		}
 
 		HttpHeaders responseHeader = getResponseHeader(uuid, request);
+		
 		return new ResponseEntity<>(responseHeader, HttpStatus.CREATED);
 	}
 
 	@PostMapping(value = COMPONENT_UUID_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@ResponseStatus(HttpStatus.CREATED)
-	public void uploadFile(@PathVariable String uuid, @RequestParam("files") List<MultipartFile> files) {
-		for (MultipartFile mFile : files) {
-			File file = new File("./reports/temp/" + uuid + "/" + mFile.getOriginalFilename());
-			FileOutputStream fos = null;
-			
-			try {
-				fos = new FileOutputStream(file);
-				fos.write(mFile.getBytes());
-			}
-			catch (Exception e) {
-				e.printStackTrace();
-			}
-			finally {
-				try {
-					fos.close();
-				} catch (IOException e) {
-					e.printStackTrace();
+	public void uploadFile(@PathVariable String uuid, @RequestParam("files") List<MultipartFile> files) throws Exception {
+		if (files != null) {
+			String fileName = "";
+					
+			for (MultipartFile mFile : files) {
+				fileName = getUniqueFileName(mFile);
+				
+				if (!fileName.isEmpty()) {
+					File file = new File(UPLOAD_PATH + uuid + "/" + fileName);
+					FileOutputStream fos = null;
+					
+					try {
+						fos = new FileOutputStream(file);
+						fos.write(mFile.getBytes());
+					}
+					catch (Exception e) {
+						throw new Exception("Error writing multipart file to directory.");
+					}
+					finally {
+						try {
+							fos.close();
+						} catch (IOException e) {
+							throw new Exception("Error writing multipart file to directory.");
+						}
+					}
+				}
+				else {
+					throw new Exception("Error extracting file extension from uploaded file.");
 				}
 			}
-
 		}
 	}
 
@@ -93,5 +105,16 @@ public class BirtReportController {
 		} catch (Exception e) {
 			return false;
 		}
+	}
+	
+	private String getUniqueFileName(MultipartFile file) {
+		String uuid = UUID.randomUUID().toString();
+		String fileExtension = FilenameUtils.getExtension(file.getOriginalFilename());
+		
+		if (!fileExtension.isEmpty()) {
+			return uuid +"."+ fileExtension;
+		}
+		
+		return "";
 	}
 }

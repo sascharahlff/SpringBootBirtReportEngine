@@ -1,4 +1,4 @@
-package de.itemis.birt.service;
+package com.bshg.plc.component.report.service;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
