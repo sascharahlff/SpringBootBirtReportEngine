@@ -24,29 +24,28 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.bshg.plc.component.report.constants.Constants;
 import com.bshg.plc.component.report.service.ReportService;
+import com.bshg.plc.component.report.service.UploadService;
 
 @RestController
 @RequestMapping("/report")
 public class BirtReportController {
 	public static final String COMPONENT_PATH = "/component";
 	public static final String COMPONENT_UUID_PATH = "/component/{uuid}/resources";
-	public static final String UPLOAD_PATH = "./reports/temp/";
 
 	@Autowired
 	ReportService reportService;
 
+	@Autowired
+	UploadService uploadService;
+
 	@PostMapping(value = COMPONENT_PATH, consumes = MediaType.ALL_VALUE)
 	public ResponseEntity<Object> createTempFolder(HttpServletRequest request) throws FileNotFoundException {
-		String uuid = UUID.randomUUID().toString();
-
-		if (!createTempFolder(uuid)) {
-			throw new FileNotFoundException("Folder '" + uuid + "' could not be created");
-		}
-
-		HttpHeaders responseHeader = getResponseHeader(uuid, request);
+		String uniqueFolderName = uploadService.createUniqueFolder();
+		HttpHeaders responseHeader = getResponseHeader(uniqueFolderName, request);
 		
-		return new ResponseEntity<>(responseHeader, HttpStatus.CREATED);
+		return new ResponseEntity<Object>(responseHeader, HttpStatus.CREATED);
 	}
 
 	@PostMapping(value = COMPONENT_UUID_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -59,7 +58,7 @@ public class BirtReportController {
 				fileName = getUniqueFileName(mFile);
 				
 				if (!fileName.isEmpty()) {
-					File file = new File(UPLOAD_PATH + uuid + "/" + fileName);
+					File file = new File(Constants.REPORT_TEMP_UPLOAD_PATH + uuid + "/" + fileName);
 					FileOutputStream fos = null;
 					
 					try {
@@ -91,20 +90,6 @@ public class BirtReportController {
 		responseHeader.setLocation(location);
 
 		return responseHeader;
-	}
-
-	private boolean createTempFolder(String uuid) {
-		File folder = new File("reports/temp/" + uuid);
-
-		try {
-			if (!folder.exists()) {
-				folder.mkdir();
-			}
-
-			return true;
-		} catch (Exception e) {
-			return false;
-		}
 	}
 	
 	private String getUniqueFileName(MultipartFile file) {

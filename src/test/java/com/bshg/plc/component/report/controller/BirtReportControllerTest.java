@@ -29,7 +29,7 @@ import com.bshg.plc.component.report.service.ReportService;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = { Application.class, WebsocketSourceConfiguration.class, BirtReportController.class }, webEnvironment = WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-public class BirtReportTest {
+public class BirtReportControllerTest {
 	private static final String SAMPLE_IMAGE1_PATH = "classpath:assets/images/hasi.png";
 	private static final String SAMPLE_IMAGE2_PATH = "classpath:assets/images/cozmo1.png";
 	private static final String SAMPLE_IMAGE3_PATH = "classpath:assets/images/cozmo2.png";

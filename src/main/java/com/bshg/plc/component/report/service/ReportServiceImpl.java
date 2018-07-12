@@ -90,7 +90,8 @@ public class ReportServiceImpl implements ReportService {
 
 		if (reportDesign == null) {
 			throw new FileNotFoundException("Report Design '" + report + "' does not exist");
-		} else {
+		}
+		else {
 			// Unique pdf name
 			// TODO String fileName = UUID.randomUUID().toString() + "." + RenderOption.OUTPUT_FORMAT_PDF;
 			String fileName = "result." + RenderOption.OUTPUT_FORMAT_PDF;
