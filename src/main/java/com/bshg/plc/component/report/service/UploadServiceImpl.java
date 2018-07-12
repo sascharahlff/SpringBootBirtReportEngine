@@ -79,8 +79,11 @@ public class UploadServiceImpl implements UploadService {
 					return uuid;
 				}
 			}
-
+			else {
+				return uuid;
+			}
 		} catch (Exception e) {
+			return null;
 		}
 
 		return null;
