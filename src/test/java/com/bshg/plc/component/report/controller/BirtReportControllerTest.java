@@ -1,13 +1,15 @@
 package com.bshg.plc.component.report.controller;
 
-import static org.junit.Assert.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 
+import org.apache.commons.io.FilenameUtils;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,19 +25,20 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.util.ResourceUtils;
 
 import com.bshg.plc.component.report.Application;
-import com.bshg.plc.component.report.controller.BirtReportController;
 import com.bshg.plc.component.report.service.ReportService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = { Application.class, WebsocketSourceConfiguration.class, BirtReportController.class }, webEnvironment = WebEnvironment.RANDOM_PORT)
+@SpringBootTest(classes = { Application.class, WebsocketSourceConfiguration.class,
+		BirtReportController.class }, webEnvironment = WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 public class BirtReportControllerTest {
-	private static final String SAMPLE_IMAGE1_PATH = "classpath:assets/images/hasi.png";
-	private static final String SAMPLE_IMAGE2_PATH = "classpath:assets/images/cozmo1.png";
-	private static final String SAMPLE_IMAGE3_PATH = "classpath:assets/images/cozmo2.png";
-	
-	// private String sampleXml = "<?xml version=\"1.0\"
-	// encoding=\"UTF-8\"?><library><name>Biff Tannen</name></library>";
+	private static final String SAMPLE_ASSET_FOLDER = "classpath:assets/";
+	private static final String SAMPLE_IMAGE_FOLDER = "classpath:images/";
+	private static final String SAMPLE_IMAGE_1 = "hasi.png";
+	private static final String SAMPLE_IMAGE_2 = "cozmo1.png";
+	private static final String SAMPLE_IMAGE_3 = "cozmo2.png";
+	private static final String SAMPLE_XML = "bsh.xml";
 
 	@Autowired
 	ReportService reportService;
@@ -43,33 +46,56 @@ public class BirtReportControllerTest {
 	@Autowired
 	private MockMvc mockMvc;
 
-	// @Test
-	public void createTempFolder() throws Exception {
+	@Autowired
+	ObjectMapper mapper;
+
+	@Test
+	public void createUniqueFolderTest() throws Exception {
 		mockMvc.perform(post("/report/component")).andExpect(status().is(HttpStatus.CREATED.value()));
 	}
 
 	@Test
-	public void uploadFileToTempFolder() throws Exception {
+	public void uploadFileToTempFolderTest() throws Exception {
 		MvcResult result = mockMvc.perform(post("/report/component")).andExpect(status().is(HttpStatus.CREATED.value())).andReturn();
 		String location = result.getResponse().getHeader("Location");
 
-		File file1 = ResourceUtils.getFile(SAMPLE_IMAGE1_PATH);
-		assertEquals(true, file1.exists());
-		
-		File file2 = ResourceUtils.getFile(SAMPLE_IMAGE2_PATH);
-		assertEquals(true, file2.exists());
+		MockMultipartFile file = getMultipartFile(SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_1);
 
-		File file3 = ResourceUtils.getFile(SAMPLE_IMAGE3_PATH);
-		assertEquals(true, file3.exists());
-
-		MockMultipartFile mFile1 = new MockMultipartFile("files", file1.getName(), "image/png", loadFileAsBytesArray(file1));
-		MockMultipartFile mFile2 = new MockMultipartFile("files", file2.getName(), "image/png", loadFileAsBytesArray(file2));
-		MockMultipartFile mFile3 = new MockMultipartFile("files", file3.getName(), "image/png", loadFileAsBytesArray(file3));
-
-		mockMvc.perform(MockMvcRequestBuilders.multipart(location).file(mFile1).file(mFile2).file(mFile3)).andExpect(status().is(HttpStatus.CREATED.value()));
+		mockMvc.perform(MockMvcRequestBuilders.multipart(location)
+				.file(file))
+				.andExpect(status().is(HttpStatus.CREATED.value())).andExpect(jsonPath("$").isArray())
+				.andExpect(jsonPath("$", Matchers.hasSize(1)));
 	}
 
-	public static byte[] loadFileAsBytesArray(File file) throws Exception {
+	@Test
+	public void uploadMultipleFilesToTempFolderTest() throws Exception {
+		MvcResult result = mockMvc.perform(post("/report/component")).andExpect(status().is(HttpStatus.CREATED.value())).andReturn();
+		String location = result.getResponse().getHeader("Location");
+
+		MockMultipartFile file1 = getMultipartFile(SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_1);
+		MockMultipartFile file2 = getMultipartFile(SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_2);
+		MockMultipartFile file3 = getMultipartFile(SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_3);
+		MockMultipartFile file4 = getMultipartFile(SAMPLE_ASSET_FOLDER + SAMPLE_XML);
+
+		mockMvc.perform(MockMvcRequestBuilders.multipart(location)
+				.file(file1).file(file2).file(file3).file(file4))
+				.andExpect(status().is(HttpStatus.CREATED.value())).andExpect(jsonPath("$").isArray())
+				.andExpect(jsonPath("$", Matchers.hasSize(4)));
+	}
+
+	private MockMultipartFile getMultipartFile(String assetName) throws Exception {
+		File file = ResourceUtils.getFile(assetName);
+		String fileExtension = FilenameUtils.getExtension(assetName);
+		String contentType = "image/png";
+
+		if (fileExtension.toLowerCase() == "xml") {
+			contentType = "text/xml";
+		}
+
+		return new MockMultipartFile("files", file.getName(), contentType, loadFileAsBytesArray(file));
+	}
+
+	private byte[] loadFileAsBytesArray(File file) throws Exception {
 		BufferedInputStream reader = new BufferedInputStream(new FileInputStream(file));
 		int length = (int) file.length();
 		byte[] bytes = new byte[length];

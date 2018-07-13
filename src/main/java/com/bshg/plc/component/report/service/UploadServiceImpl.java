@@ -4,9 +4,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import org.apache.commons.io.FilenameUtils;
@@ -14,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.bshg.plc.component.report.constants.Constants;
+import com.bshg.plc.component.report.domain.ReportAsset;
 
 @Service
 public class UploadServiceImpl implements UploadService {
@@ -29,8 +29,8 @@ public class UploadServiceImpl implements UploadService {
 	}
 
 	@Override
-	public Map<String, String> uploadFiles(final List<MultipartFile> files, final String uuid) throws Exception {
-		Map<String, String> fileMap = new HashMap<String, String>();
+	public List<ReportAsset> uploadFiles(final List<MultipartFile> files, final String uuid) throws Exception {
+		List<ReportAsset> assetList = new ArrayList<ReportAsset>();
 		
 		if (files != null) {
 			String fileName = "";
@@ -52,7 +52,7 @@ public class UploadServiceImpl implements UploadService {
 					finally {
 						try {
 							fos.close();
-							fileMap.put(mFile.getOriginalFilename(), fileName);
+							assetList.add(new ReportAsset(mFile.getOriginalFilename(), uuid));
 						} catch (IOException e) {
 							throw new Exception("Error writing multipart file to directory.");
 						}
@@ -64,7 +64,7 @@ public class UploadServiceImpl implements UploadService {
 			}
 		}
 		
-		return fileMap;
+		return assetList;
 	}
 
 	private String createTempFolder() {

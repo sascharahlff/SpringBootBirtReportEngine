@@ -10,7 +10,6 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.io.FilenameUtils;
 import org.junit.Test;
@@ -25,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.bshg.plc.component.report.Application;
 import com.bshg.plc.component.report.constants.Constants;
+import com.bshg.plc.component.report.domain.ReportAsset;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = { Application.class })
@@ -51,7 +51,7 @@ public class UploadServiceTest {
 	}
 
 	@Test
-	public void uploadFileTest() throws Exception {
+	public void uploadFileToTempFolderTest() throws Exception {
 		String folderName = uploadService.createUniqueFolder();
 		List<MultipartFile> files = new ArrayList<MultipartFile>();
 
@@ -61,12 +61,12 @@ public class UploadServiceTest {
 		MockMultipartFile mFile = new MockMultipartFile("files", file.getName(), "image/png", loadFileAsBytesArray(file));
 		files.add(mFile);
 
-		Map<String, String> fileList = uploadService.uploadFiles(files, folderName);
-		assertEquals(true, fileList.get("hasi.png").contains(".png"));
+		List<ReportAsset> fileList = uploadService.uploadFiles(files, folderName);
+		assertEquals(1, fileList.size());
 	}
 
 	@Test
-	public void uploadMultipleFileTest() throws Exception {
+	public void uploadMultipleFilesToTempFolderTest() throws Exception {
 		String folderName = uploadService.createUniqueFolder();
 		List<MultipartFile> files = new ArrayList<MultipartFile>();
 
@@ -77,18 +77,8 @@ public class UploadServiceTest {
 		
 		files.addAll(Arrays.asList(file1, file2, file3, file4));
 
-		Map<String, String> fileList = uploadService.uploadFiles(files, folderName);
-		assertNotNull(fileList.get(SAMPLE_IMAGE_1));
-		assertNotNull(fileList.get(SAMPLE_IMAGE_2));
-		assertNotNull(fileList.get(SAMPLE_IMAGE_3));
-		assertNotNull(fileList.get(SAMPLE_XML));
-		
-		assertEquals(true, fileList.get(SAMPLE_IMAGE_1).contains(".png"));
-		assertEquals(true, fileList.get(SAMPLE_IMAGE_2).contains(".png"));
-		assertEquals(true, fileList.get(SAMPLE_IMAGE_3).contains(".png"));
-		assertEquals(true, fileList.get(SAMPLE_XML).contains(".xml"));
-		
-		System.out.println(fileList);
+		List<ReportAsset> fileList = uploadService.uploadFiles(files, folderName);
+		assertEquals(4, fileList.size());
 	}
 
 	private MockMultipartFile getMultipartFile(String assetName) throws Exception {
