@@ -29,6 +29,8 @@ import com.bshg.plc.component.report.utils.TestUtils;
 @SpringBootTest(classes = { Application.class })
 @AutoConfigureMockMvc
 public class UploadServiceTest {
+	private static final String MULTIPART_REQUEST_PARAM_NAME = "files";
+	private static final String XML_REQUEST_PARAM_NAME = "data";
 	private static final String SAMPLE_ASSET_FOLDER = "classpath:assets/";
 	private static final String SAMPLE_IMAGE_FOLDER = "classpath:images/";
 	private static final String SAMPLE_IMAGE_1 = "hasi.png";
@@ -81,10 +83,10 @@ public class UploadServiceTest {
 		List<MultipartFile> files = new ArrayList<MultipartFile>();
 		tempFolders.add(folderName);
 
-		MockMultipartFile file1 = TestUtils.getMockMultipartFile(SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_1);
-		MockMultipartFile file2 = TestUtils.getMockMultipartFile(SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_2);
-		MockMultipartFile file3 = TestUtils.getMockMultipartFile(SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_3);
-		MockMultipartFile file4 = TestUtils.getMockMultipartFile(SAMPLE_ASSET_FOLDER + SAMPLE_XML);
+		MockMultipartFile file1 = TestUtils.getMockMultipartFile(MULTIPART_REQUEST_PARAM_NAME, SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_1);
+		MockMultipartFile file2 = TestUtils.getMockMultipartFile(MULTIPART_REQUEST_PARAM_NAME, SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_2);
+		MockMultipartFile file3 = TestUtils.getMockMultipartFile(MULTIPART_REQUEST_PARAM_NAME, SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_3);
+		MockMultipartFile file4 = TestUtils.getMockMultipartFile(MULTIPART_REQUEST_PARAM_NAME, SAMPLE_ASSET_FOLDER + SAMPLE_XML);
 		
 		files.addAll(Arrays.asList(file1, file2, file3, file4));
 
@@ -94,6 +96,18 @@ public class UploadServiceTest {
 		assertEquals(((ReportAsset) fileList.get(1)).getOrigin(), SAMPLE_IMAGE_2);
 		assertEquals(((ReportAsset) fileList.get(2)).getOrigin(), SAMPLE_IMAGE_3);
 		assertEquals(((ReportAsset) fileList.get(3)).getOrigin(), SAMPLE_XML);
+	}
+	
+	@Test
+	public void uploadXmlFile() throws Exception {
+		String folderName = uploadService.createTempFolder();
+		tempFolders.add(folderName);
+		MockMultipartFile file = TestUtils.getMockMultipartFile(XML_REQUEST_PARAM_NAME, SAMPLE_ASSET_FOLDER + SAMPLE_XML);
+		
+		assertEquals(true, uploadService.uploadDataXml(file, folderName));
+		
+		File xmlData = new File(Constants.REPORT_TEMP_UPLOAD_PATH + folderName +"/data.xml");
+		assertEquals(true, xmlData.exists());
 	}
 	
 	@Test

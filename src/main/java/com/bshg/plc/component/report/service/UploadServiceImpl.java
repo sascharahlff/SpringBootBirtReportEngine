@@ -2,8 +2,6 @@ package com.bshg.plc.component.report.service;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -34,39 +32,37 @@ public class UploadServiceImpl implements UploadService {
 		List<ReportAsset> assetList = new ArrayList<ReportAsset>();
 		
 		if (files != null) {
-			String fileName = "";
-
-			for (MultipartFile mFile : files) {
+			String filePath = Constants.REPORT_TEMP_UPLOAD_PATH + uuid + "/";
+			
+			for (MultipartFile file : files) {
 				String fileUUID = UUID.randomUUID().toString();
-				fileName = fileUUID +"."+ getFileExtension(mFile);
+				String fileName = fileUUID +"."+ getFileExtension(file);
+				try {
+					file.transferTo(new File(filePath + fileName));
+				} catch (Exception e) {
+					throw new Exception("Error writing multipart file to directory.");
+				}
 				
-				if (!fileName.isEmpty()) {
-					File file = new File(Constants.REPORT_TEMP_UPLOAD_PATH + uuid + "/" + fileName);
-					FileOutputStream fos = null;
-					
-					try {
-						fos = new FileOutputStream(file);
-						fos.write(mFile.getBytes());
-					}
-					catch (Exception e) {
-						throw new Exception("Error writing multipart file to directory.");
-					}
-					finally {
-						try {
-							fos.close();
-							assetList.add(new ReportAsset(mFile.getOriginalFilename(), fileUUID));
-						} catch (IOException e) {
-							throw new Exception("Error writing multipart file to directory.");
-						}
-					}
-				}
-				else {
-					throw new Exception("Error extracting file extension from uploaded file.");
-				}
+				assetList.add(new ReportAsset(file.getOriginalFilename(), fileUUID));
 			}
 		}
 		
 		return assetList;
+	}
+
+	
+	@Override
+	public boolean uploadDataXml(MultipartFile file, final String uuid) throws Exception {
+		if (file != null) {
+			try {
+				String filePath = Constants.REPORT_TEMP_UPLOAD_PATH + uuid + "/data.xml";
+				file.transferTo(new File(filePath));
+			} catch (Exception e) {
+				throw new Exception("Error writing multipart file to directory.");
+			}
+		}
+		
+		return true;
 	}
 	
 	@Override
@@ -107,4 +103,5 @@ public class UploadServiceImpl implements UploadService {
 		
 		return "";
 	}
+
 }

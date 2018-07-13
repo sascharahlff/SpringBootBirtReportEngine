@@ -9,7 +9,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.util.ResourceUtils;
 
 public class TestUtils {
-	public static MockMultipartFile getMockMultipartFile(String assetName) throws Exception {
+	public static MockMultipartFile getMockMultipartFile(final String requestParamName, final String assetName) throws Exception {
 		File file = ResourceUtils.getFile(assetName);
 		String fileExtension = FilenameUtils.getExtension(assetName);
 		String contentType = "image/png";
@@ -18,10 +18,10 @@ public class TestUtils {
 			contentType = "text/xml";
 		}
 
-		return new MockMultipartFile("files", file.getName(), contentType, loadFileAsBytesArray(file));
+		return new MockMultipartFile(requestParamName, file.getName(), contentType, loadFileAsBytesArray(file));
 	}
 
-	public static byte[] loadFileAsBytesArray(File file) throws Exception {
+	public static byte[] loadFileAsBytesArray(final File file) throws Exception {
 		BufferedInputStream reader = new BufferedInputStream(new FileInputStream(file));
 		int length = (int) file.length();
 		byte[] bytes = new byte[length];

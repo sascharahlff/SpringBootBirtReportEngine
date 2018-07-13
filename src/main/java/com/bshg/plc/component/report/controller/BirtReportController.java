@@ -2,7 +2,6 @@ package com.bshg.plc.component.report.controller;
 
 import java.io.FileNotFoundException;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -29,10 +28,10 @@ import com.bshg.plc.component.report.service.UploadService;
 @RestController
 @RequestMapping("/report")
 public class BirtReportController {
-	public static final String COMPONENT_PATH = "/component";
-	public static final String COMPONENT_UUID_PATH = "/component/{uuid}";
-	public static final String COMPONENT_UUID_DATA_PATH = "/component/{uuid}/data";
-	public static final String COMPONENT_UUID_RESOURCES_PATH = "/component/{uuid}/resources";
+	private static final String COMPONENT_PATH = "/component";
+	private static final String COMPONENT_UUID_PATH = "/component/{uuid}";
+	private static final String COMPONENT_UUID_DATA_PATH = "/component/{uuid}/data";
+	private static final String COMPONENT_UUID_RESOURCES_PATH = "/component/{uuid}/resources";
 
 	@Autowired
 	ReportService reportService;
@@ -64,14 +63,11 @@ public class BirtReportController {
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void uploadXML(@PathVariable String uuid, @RequestParam("data") MultipartFile file) throws Exception {
 		if (file == null) {
-			throw new IllegalArgumentException("No file provided for upload.");
+			throw new IllegalArgumentException("No xml file provided for upload.");
 		}
-
-		List<MultipartFile> files = new ArrayList<MultipartFile>();
-		files.add(file);
-		uploadService.uploadMultipartFiles(files, uuid);
+		
+		uploadService.uploadDataXml(file, uuid);
 	}
-
 	
 	@GetMapping(value = COMPONENT_UUID_PATH, consumes = MediaType.ALL_VALUE)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
@@ -81,7 +77,7 @@ public class BirtReportController {
 	
 	private HttpHeaders createResponseHeader(final String uuid, final HttpServletRequest request) {
 		String currentUrl = request.getRequestURL().toString();
-		URI location = URI.create(currentUrl + "/" + uuid + "/resources");
+		URI location = URI.create(currentUrl + "/" + uuid);
 		HttpHeaders responseHeader = new HttpHeaders();
 		responseHeader.setLocation(location);
 
