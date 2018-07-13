@@ -34,6 +34,8 @@ public class UploadServiceImpl implements UploadService {
 		
 		if (files != null) {
 			String fileName = "";
+			
+			
 					
 			for (MultipartFile mFile : files) {
 				fileName = getUniqueFileName(mFile);

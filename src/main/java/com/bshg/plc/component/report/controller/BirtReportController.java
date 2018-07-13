@@ -2,9 +2,7 @@ package com.bshg.plc.component.report.controller;
 
 import java.io.FileNotFoundException;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -50,8 +48,6 @@ public class BirtReportController {
 	@ResponseStatus(HttpStatus.CREATED)
 	public @ResponseBody List<ReportAsset> uploadFile(@PathVariable String uuid, @RequestParam("files") List<MultipartFile> files) throws Exception {
 		List<ReportAsset> assetList = uploadService.uploadFiles(files, uuid);
-
-		//MultiValueMap<String, Person> map = new LinkedMultiValueMap<>();
 		
 		return assetList;
 	}

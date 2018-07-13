@@ -42,7 +42,7 @@ public class ReportServiceImpl implements ReportService {
 
 	@PostConstruct
 	public void init() {
-		System.out.println("startup");
+		System.out.println("report engine startup");
 		EngineConfig engineConfig = new EngineConfig();
 		engineConfig.setLogConfig(LOG_PATH, Level.WARNING);
 
@@ -60,9 +60,9 @@ public class ReportServiceImpl implements ReportService {
 
 	@PreDestroy
 	public void destroy() {
-		System.out.println("destroy");
 		engine.destroy();
 		Platform.shutdown();
+		System.out.println("report engine destroyed");
 	}
 
 	@Override

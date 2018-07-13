@@ -4,11 +4,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-
-import org.apache.commons.io.FilenameUtils;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,15 +17,14 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.util.ResourceUtils;
 
 import com.bshg.plc.component.report.Application;
 import com.bshg.plc.component.report.service.ReportService;
+import com.bshg.plc.component.report.utils.TestUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = { Application.class, WebsocketSourceConfiguration.class,
-		BirtReportController.class }, webEnvironment = WebEnvironment.RANDOM_PORT)
+@SpringBootTest(classes = { Application.class, WebsocketSourceConfiguration.class, BirtReportController.class }, webEnvironment = WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 public class BirtReportControllerTest {
 	private static final String SAMPLE_ASSET_FOLDER = "classpath:assets/";
@@ -59,7 +53,7 @@ public class BirtReportControllerTest {
 		MvcResult result = mockMvc.perform(post("/report/component")).andExpect(status().is(HttpStatus.CREATED.value())).andReturn();
 		String location = result.getResponse().getHeader("Location");
 
-		MockMultipartFile file = getMultipartFile(SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_1);
+		MockMultipartFile file = TestUtils.getMockMultipartFile(SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_1);
 
 		mockMvc.perform(MockMvcRequestBuilders.multipart(location)
 				.file(file))
@@ -72,36 +66,18 @@ public class BirtReportControllerTest {
 		MvcResult result = mockMvc.perform(post("/report/component")).andExpect(status().is(HttpStatus.CREATED.value())).andReturn();
 		String location = result.getResponse().getHeader("Location");
 
-		MockMultipartFile file1 = getMultipartFile(SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_1);
-		MockMultipartFile file2 = getMultipartFile(SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_2);
-		MockMultipartFile file3 = getMultipartFile(SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_3);
-		MockMultipartFile file4 = getMultipartFile(SAMPLE_ASSET_FOLDER + SAMPLE_XML);
+		MockMultipartFile file1 = TestUtils.getMockMultipartFile(SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_1);
+		MockMultipartFile file2 = TestUtils.getMockMultipartFile(SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_2);
+		MockMultipartFile file3 = TestUtils.getMockMultipartFile(SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_3);
+		MockMultipartFile file4 = TestUtils.getMockMultipartFile(SAMPLE_ASSET_FOLDER + SAMPLE_XML);
 
 		mockMvc.perform(MockMvcRequestBuilders.multipart(location)
 				.file(file1).file(file2).file(file3).file(file4))
 				.andExpect(status().is(HttpStatus.CREATED.value())).andExpect(jsonPath("$").isArray())
-				.andExpect(jsonPath("$", Matchers.hasSize(4)));
-	}
-
-	private MockMultipartFile getMultipartFile(String assetName) throws Exception {
-		File file = ResourceUtils.getFile(assetName);
-		String fileExtension = FilenameUtils.getExtension(assetName);
-		String contentType = "image/png";
-
-		if (fileExtension.toLowerCase() == "xml") {
-			contentType = "text/xml";
-		}
-
-		return new MockMultipartFile("files", file.getName(), contentType, loadFileAsBytesArray(file));
-	}
-
-	private byte[] loadFileAsBytesArray(File file) throws Exception {
-		BufferedInputStream reader = new BufferedInputStream(new FileInputStream(file));
-		int length = (int) file.length();
-		byte[] bytes = new byte[length];
-		reader.read(bytes, 0, length);
-		reader.close();
-
-		return bytes;
+				.andExpect(jsonPath("$", Matchers.hasSize(4)))
+				.andExpect(jsonPath("$.[0].origin", Matchers.is(SAMPLE_IMAGE_1)))
+				.andExpect(jsonPath("$.[1].origin", Matchers.is(SAMPLE_IMAGE_2)))
+				.andExpect(jsonPath("$.[2].origin", Matchers.is(SAMPLE_IMAGE_3)))
+				.andExpect(jsonPath("$.[3].origin", Matchers.is(SAMPLE_XML)));
 	}
 }
