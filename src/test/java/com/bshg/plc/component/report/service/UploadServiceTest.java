@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,12 +36,22 @@ public class UploadServiceTest {
 	private static final String SAMPLE_IMAGE_3 = "cozmo2.png";
 	private static final String SAMPLE_XML = "bsh.xml";
 
+	List<String> tempFolders = new ArrayList<String>();
+	
 	@Autowired
 	UploadService uploadService;
-
+	
+	@After
+	public void removeAllTemporaryFolders() {
+		for (String folder : tempFolders) {
+			uploadService.removeTemporaryFolder(folder);
+		}
+	}
+	
 	@Test
-	public void createUniqueFolderTest() throws FileNotFoundException {
-		String folderName = uploadService.createUniqueFolder();
+	public void createTemporaryFolderTest() throws FileNotFoundException {
+		String folderName = uploadService.createTempFolder();
+		tempFolders.add(folderName);
 
 		assertNotNull(folderName);
 
@@ -50,8 +61,9 @@ public class UploadServiceTest {
 
 	@Test
 	public void uploadFileToTempFolderTest() throws Exception {
-		String folderName = uploadService.createUniqueFolder();
+		String folderName = uploadService.createTempFolder();
 		List<MultipartFile> files = new ArrayList<MultipartFile>();
+		tempFolders.add(folderName);
 
 		File file = ResourceUtils.getFile(SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_1);
 		assertEquals(true, file.exists());
@@ -59,14 +71,15 @@ public class UploadServiceTest {
 		MockMultipartFile mFile = new MockMultipartFile("files", file.getName(), "image/png", TestUtils.loadFileAsBytesArray(file));
 		files.add(mFile);
 
-		List<ReportAsset> fileList = uploadService.uploadFiles(files, folderName);
+		List<ReportAsset> fileList = uploadService.uploadMultipartFiles(files, folderName);
 		assertEquals(1, fileList.size());
 	}
 
 	@Test
 	public void uploadMultipleFilesToTempFolderTest() throws Exception {
-		String folderName = uploadService.createUniqueFolder();
+		String folderName = uploadService.createTempFolder();
 		List<MultipartFile> files = new ArrayList<MultipartFile>();
+		tempFolders.add(folderName);
 
 		MockMultipartFile file1 = TestUtils.getMockMultipartFile(SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_1);
 		MockMultipartFile file2 = TestUtils.getMockMultipartFile(SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_2);
@@ -75,11 +88,17 @@ public class UploadServiceTest {
 		
 		files.addAll(Arrays.asList(file1, file2, file3, file4));
 
-		List<ReportAsset> fileList = uploadService.uploadFiles(files, folderName);
+		List<ReportAsset> fileList = uploadService.uploadMultipartFiles(files, folderName);
 		assertEquals(4, fileList.size());
 		assertEquals(((ReportAsset) fileList.get(0)).getOrigin(), SAMPLE_IMAGE_1);
 		assertEquals(((ReportAsset) fileList.get(1)).getOrigin(), SAMPLE_IMAGE_2);
 		assertEquals(((ReportAsset) fileList.get(2)).getOrigin(), SAMPLE_IMAGE_3);
 		assertEquals(((ReportAsset) fileList.get(3)).getOrigin(), SAMPLE_XML);
+	}
+	
+	@Test
+	public void removeTemporaryFolder() throws FileNotFoundException {
+		String folderName = uploadService.createTempFolder();
+		assertEquals(true, uploadService.removeTemporaryFolder(folderName));
 	}
 }

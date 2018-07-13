@@ -4,8 +4,9 @@ public class ReportAsset {
 	String origin = "";
 	String uuid = "";
 
+	// Object Mapper needs empty constructor
 	public ReportAsset() {
-		
+		super();
 	}
 	
 	public ReportAsset(final String origin, final String uuid) {

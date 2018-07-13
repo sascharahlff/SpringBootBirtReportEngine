@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,8 +19,8 @@ import com.bshg.plc.component.report.domain.ReportAsset;
 @Service
 public class UploadServiceImpl implements UploadService {
 	@Override
-	public String createUniqueFolder() throws FileNotFoundException {
-		String uuid = createTempFolder();
+	public String createTempFolder() throws FileNotFoundException {
+		String uuid = createTemporaryFolder();
 
 		if (uuid == null) {
 			throw new FileNotFoundException("Folder '" + uuid + "' could not be created");
@@ -29,16 +30,15 @@ public class UploadServiceImpl implements UploadService {
 	}
 
 	@Override
-	public List<ReportAsset> uploadFiles(final List<MultipartFile> files, final String uuid) throws Exception {
+	public List<ReportAsset> uploadMultipartFiles(final List<MultipartFile> files, final String uuid) throws Exception {
 		List<ReportAsset> assetList = new ArrayList<ReportAsset>();
 		
 		if (files != null) {
 			String fileName = "";
-			
-			
-					
+
 			for (MultipartFile mFile : files) {
-				fileName = getUniqueFileName(mFile);
+				String fileUUID = UUID.randomUUID().toString();
+				fileName = fileUUID +"."+ getFileExtension(mFile);
 				
 				if (!fileName.isEmpty()) {
 					File file = new File(Constants.REPORT_TEMP_UPLOAD_PATH + uuid + "/" + fileName);
@@ -54,7 +54,7 @@ public class UploadServiceImpl implements UploadService {
 					finally {
 						try {
 							fos.close();
-							assetList.add(new ReportAsset(mFile.getOriginalFilename(), uuid));
+							assetList.add(new ReportAsset(mFile.getOriginalFilename(), fileUUID));
 						} catch (IOException e) {
 							throw new Exception("Error writing multipart file to directory.");
 						}
@@ -68,8 +68,15 @@ public class UploadServiceImpl implements UploadService {
 		
 		return assetList;
 	}
+	
+	@Override
+	public boolean removeTemporaryFolder(String uuid) {
+		File folder = new File(Constants.REPORT_TEMP_UPLOAD_PATH + uuid);
+		
+		return FileUtils.deleteQuietly(folder);
+	}
 
-	private String createTempFolder() {
+	private String createTemporaryFolder() {
 		String uuid = UUID.randomUUID().toString();
 		File folder = new File(Constants.REPORT_TEMP_UPLOAD_PATH + uuid);
 
@@ -91,12 +98,11 @@ public class UploadServiceImpl implements UploadService {
 		return null;
 	}
 	
-	private String getUniqueFileName(MultipartFile file) {
-		String uuid = UUID.randomUUID().toString();
+	private String getFileExtension(MultipartFile file) {
 		String fileExtension = FilenameUtils.getExtension(file.getOriginalFilename());
 		
 		if (!fileExtension.isEmpty()) {
-			return uuid +"."+ fileExtension;
+			return fileExtension;
 		}
 		
 		return "";
