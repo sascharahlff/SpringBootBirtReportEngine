@@ -4,8 +4,12 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.logging.Level;
 
 import javax.annotation.PostConstruct;
@@ -67,39 +71,29 @@ public class ReportServiceImpl implements ReportService {
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public String createReport(String report, String xml) throws FileNotFoundException {
-		String reportPath = REPORT_PATH + report;
+	public String createReport(String uuid) throws IOException {
+		String reportPath = REPORT_PATH + "bsh.rptdesign";
 		String outputFile = "";
-
-		// File file = new
-		// File("/Users/sascha/repos/SpringBootBirtReportEngine/src/main/resources/assets/bsh.xml");
-
-		// byte[] encoded = null;
-		// try {
-		// encoded =
-		// Files.readAllBytes(Paths.get("/Users/sascha/repos/SpringBootBirtReportEngine/src/main/resources/assets/bsh.xml"));
-		// String s = new String(encoded, "UTF-8");
-		// System.out.println(s);
-		// } catch (IOException e1) {
-		// // TODO Auto-generated catch block
-		// e1.printStackTrace();
-		// }
+		
+		System.out.println(reportPath);
 
 		// Get report design
 		IReportRunnable reportDesign = getReportDesign(reportPath);
 
 		if (reportDesign == null) {
-			throw new FileNotFoundException("Report Design '" + report + "' does not exist");
+			throw new FileNotFoundException("Report Design does not exist");
 		}
 		else {
 			// Unique pdf name
 			// TODO String fileName = UUID.randomUUID().toString() + "." + RenderOption.OUTPUT_FORMAT_PDF;
 			String fileName = "result." + RenderOption.OUTPUT_FORMAT_PDF;
 			IRunAndRenderTask task = engine.createRunAndRenderTask(reportDesign);
+			String path = "./reports/temp/" + uuid +"/data.xml";
 
+			byte[] encoded = Files.readAllBytes(Paths.get(path));
+			
 			// Override XML structure in report
-			ByteArrayInputStream byteArray = new ByteArrayInputStream(xml.getBytes());
-			//ByteArrayInputStream byteArray = new ByteArrayInputStream(encoded);
+			ByteArrayInputStream byteArray = new ByteArrayInputStream(encoded);
 			Map<String, ByteArrayInputStream> appContext = task.getAppContext();
 			appContext.put("org.eclipse.datatools.enablement.oda.xml.inputStream", byteArray);
 
@@ -113,14 +107,13 @@ public class ReportServiceImpl implements ReportService {
 				task.run();
 				outputFile = fileName;
 			} catch (EngineException e) {
-				System.err.println("Report" + report + " run failed.\n");
-				System.err.println(e.toString());
+				System.out.println("error");
 			}
 		}
 
 		return outputFile;
 	}
-
+	
 	@Override
 	public ResponseEntity<InputStreamResource> getReport(String report) throws FileNotFoundException {
 		File reportFile = new File(OUTPUT_PATH + report);

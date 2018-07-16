@@ -1,8 +1,9 @@
 package com.bshg.plc.component.report.utils;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.mock.web.MockMultipartFile;
@@ -18,16 +19,10 @@ public class TestUtils {
 			contentType = "text/xml";
 		}
 
-		return new MockMultipartFile(requestParamName, file.getName(), contentType, loadFileAsBytesArray(file));
+		return new MockMultipartFile(requestParamName, file.getName(), contentType, readFileAsBytesArray(file));
 	}
-
-	public static byte[] loadFileAsBytesArray(final File file) throws Exception {
-		BufferedInputStream reader = new BufferedInputStream(new FileInputStream(file));
-		int length = (int) file.length();
-		byte[] bytes = new byte[length];
-		reader.read(bytes, 0, length);
-		reader.close();
-
-		return bytes;
+	
+	public static byte[] readFileAsBytesArray(final File file) throws IOException {
+		return Files.readAllBytes(Paths.get(file.getAbsolutePath()));
 	}
 }

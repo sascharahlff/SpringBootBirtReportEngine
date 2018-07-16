@@ -1,5 +1,5 @@
 server:
   port: 8080
 report:
-  input: '/Users/sascha/blub/'
-  output: '/Users/sascha/blub/'
+  input: '/Users/sascha/repos/SpringBootBirtReportEngine/reports/'
+  output: '/Users/sascha/repos/SpringBootBirtReportEngine/reports/'

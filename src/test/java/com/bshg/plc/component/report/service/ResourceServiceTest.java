@@ -26,9 +26,9 @@ import com.bshg.plc.component.report.domain.ReportAsset;
 import com.bshg.plc.component.report.utils.TestUtils;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = { Application.class })
+@SpringBootTest(classes = Application.class)
 @AutoConfigureMockMvc
-public class UploadServiceTest {
+public class ResourceServiceTest {
 	private static final String MULTIPART_REQUEST_PARAM_NAME = "files";
 	private static final String XML_REQUEST_PARAM_NAME = "data";
 	private static final String SAMPLE_ASSET_FOLDER = "classpath:assets/";
@@ -41,18 +41,18 @@ public class UploadServiceTest {
 	List<String> tempFolders = new ArrayList<String>();
 	
 	@Autowired
-	UploadService uploadService;
+	ResourceService resourceService;
 	
 	@After
 	public void removeAllTemporaryFolders() {
 		for (String folder : tempFolders) {
-			uploadService.removeTemporaryFolder(folder);
+			resourceService.removeTemporaryFolder(folder);
 		}
 	}
 	
 	@Test
-	public void createTemporaryFolderTest() throws FileNotFoundException {
-		String folderName = uploadService.createTempFolder();
+	public void createTemporaryFolder() throws FileNotFoundException {
+		String folderName = resourceService.createTempFolder();
 		tempFolders.add(folderName);
 
 		assertNotNull(folderName);
@@ -62,24 +62,24 @@ public class UploadServiceTest {
 	}
 
 	@Test
-	public void uploadFileToTempFolderTest() throws Exception {
-		String folderName = uploadService.createTempFolder();
+	public void uploadFileToTempFolder() throws Exception {
+		String folderName = resourceService.createTempFolder();
 		List<MultipartFile> files = new ArrayList<MultipartFile>();
 		tempFolders.add(folderName);
 
 		File file = ResourceUtils.getFile(SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_1);
 		assertEquals(true, file.exists());
 
-		MockMultipartFile mFile = new MockMultipartFile("files", file.getName(), "image/png", TestUtils.loadFileAsBytesArray(file));
+		MockMultipartFile mFile = new MockMultipartFile("files", file.getName(), "image/png", TestUtils.readFileAsBytesArray(file));
 		files.add(mFile);
 
-		List<ReportAsset> fileList = uploadService.uploadMultipartFiles(files, folderName);
+		List<ReportAsset> fileList = resourceService.uploadMultipartFiles(files, folderName);
 		assertEquals(1, fileList.size());
 	}
 
 	@Test
-	public void uploadMultipleFilesToTempFolderTest() throws Exception {
-		String folderName = uploadService.createTempFolder();
+	public void uploadMultipleFilesToTempFolder() throws Exception {
+		String folderName = resourceService.createTempFolder();
 		List<MultipartFile> files = new ArrayList<MultipartFile>();
 		tempFolders.add(folderName);
 
@@ -90,7 +90,7 @@ public class UploadServiceTest {
 		
 		files.addAll(Arrays.asList(file1, file2, file3, file4));
 
-		List<ReportAsset> fileList = uploadService.uploadMultipartFiles(files, folderName);
+		List<ReportAsset> fileList = resourceService.uploadMultipartFiles(files, folderName);
 		assertEquals(4, fileList.size());
 		assertEquals(((ReportAsset) fileList.get(0)).getOrigin(), SAMPLE_IMAGE_1);
 		assertEquals(((ReportAsset) fileList.get(1)).getOrigin(), SAMPLE_IMAGE_2);
@@ -100,11 +100,11 @@ public class UploadServiceTest {
 	
 	@Test
 	public void uploadXmlFile() throws Exception {
-		String folderName = uploadService.createTempFolder();
+		String folderName = resourceService.createTempFolder();
 		tempFolders.add(folderName);
 		MockMultipartFile file = TestUtils.getMockMultipartFile(XML_REQUEST_PARAM_NAME, SAMPLE_ASSET_FOLDER + SAMPLE_XML);
 		
-		assertEquals(true, uploadService.uploadDataXml(file, folderName));
+		assertEquals(true, resourceService.uploadDataXml(file, folderName));
 		
 		File xmlData = new File(Constants.REPORT_TEMP_UPLOAD_PATH + folderName +"/data.xml");
 		assertEquals(true, xmlData.exists());
@@ -112,7 +112,7 @@ public class UploadServiceTest {
 	
 	@Test
 	public void removeTemporaryFolder() throws FileNotFoundException {
-		String folderName = uploadService.createTempFolder();
-		assertEquals(true, uploadService.removeTemporaryFolder(folderName));
+		String folderName = resourceService.createTempFolder();
+		assertEquals(true, resourceService.removeTemporaryFolder(folderName));
 	}
 }

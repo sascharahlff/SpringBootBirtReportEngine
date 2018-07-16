@@ -15,7 +15,9 @@ import com.bshg.plc.component.report.constants.Constants;
 import com.bshg.plc.component.report.domain.ReportAsset;
 
 @Service
-public class UploadServiceImpl implements UploadService {
+public class ResourceServiceImpl implements ResourceService {
+	private static final String XML_FILE_NAME = "data.xml";
+	
 	@Override
 	public String createTempFolder() throws FileNotFoundException {
 		String uuid = createTemporaryFolder();
@@ -55,7 +57,7 @@ public class UploadServiceImpl implements UploadService {
 	public boolean uploadDataXml(MultipartFile file, final String uuid) throws Exception {
 		if (file != null) {
 			try {
-				String filePath = Constants.REPORT_TEMP_UPLOAD_PATH + uuid + "/data.xml";
+				String filePath = Constants.REPORT_TEMP_UPLOAD_PATH + uuid +"/"+ XML_FILE_NAME;
 				file.transferTo(new File(filePath));
 			} catch (Exception e) {
 				throw new Exception("Error writing multipart file to directory.");

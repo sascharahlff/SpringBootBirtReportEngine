@@ -32,9 +32,9 @@ import com.bshg.plc.component.report.utils.TestUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = { Application.class, WebsocketSourceConfiguration.class, BirtReportController.class }, webEnvironment = WebEnvironment.RANDOM_PORT)
+@SpringBootTest(classes = { Application.class, WebsocketSourceConfiguration.class, ReportController.class }, webEnvironment = WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-public class BirtReportControllerTest {
+public class ReportControllerTest {
 	private static final String DATA_PATH = "/data";
 	private static final String RESOURCES_PATH = "/resources";
 	private static final String MULTIPART_REQUEST_PARAM_NAME = "files";
@@ -67,14 +67,14 @@ public class BirtReportControllerTest {
 	}
 
 	@Test
-	public void createUniqueFolderTest() throws Exception {
+	public void createTemporaryFolder() throws Exception {
 		MvcResult result = mockMvc.perform(post("/report/component")).andExpect(status().is(HttpStatus.CREATED.value())).andReturn();
 		String location = result.getResponse().getHeader("Location");
 		addFolderToDelete(location);
 	}
 
 	@Test
-	public void uploadFileToTempFolderTest() throws Exception {
+	public void uploadFileToTempFolder() throws Exception {
 		MvcResult result = mockMvc.perform(post("/report/component")).andExpect(status().is(HttpStatus.CREATED.value())).andReturn();
 		String location = result.getResponse().getHeader("Location");
 		addFolderToDelete(location);
@@ -87,7 +87,7 @@ public class BirtReportControllerTest {
 	}
 
 	@Test
-	public void uploadMultipleFilesToTempFolderTest() throws Exception {
+	public void uploadMultipleFilesToTempFolder() throws Exception {
 		MvcResult result = mockMvc.perform(post("/report/component")).andExpect(status().is(HttpStatus.CREATED.value())).andReturn();
 		String location = result.getResponse().getHeader("Location");
 		addFolderToDelete(location);
@@ -130,6 +130,11 @@ public class BirtReportControllerTest {
 		mockMvc.perform(get("/report/component/" + uuid)).andExpect(status().is(HttpStatus.NO_CONTENT.value()));
 	}
 
+	@Test
+	public void createPDF() {
+		
+	}
+	
 	// Helper-Function to delete all created folders
 	private void addFolderToDelete(final String location) {
 		String uuid = getUUIDFromLocation(location);

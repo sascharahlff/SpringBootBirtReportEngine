@@ -23,11 +23,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.bshg.plc.component.report.domain.ReportAsset;
 import com.bshg.plc.component.report.service.ReportService;
-import com.bshg.plc.component.report.service.UploadService;
+import com.bshg.plc.component.report.service.ResourceService;
 
 @RestController
 @RequestMapping("/report")
-public class BirtReportController {
+public class ReportController {
 	private static final String COMPONENT_PATH = "/component";
 	private static final String COMPONENT_UUID_PATH = "/component/{uuid}";
 	private static final String COMPONENT_UUID_DATA_PATH = "/component/{uuid}/data";
@@ -37,11 +37,17 @@ public class BirtReportController {
 	ReportService reportService;
 
 	@Autowired
-	UploadService uploadService;
+	ResourceService resourceService;
+
+
+	@GetMapping(value = COMPONENT_PATH, consumes = MediaType.ALL_VALUE)
+	public ResponseEntity<byte[]> createReport() {
+		return null;
+	}
 
 	@PostMapping(value = COMPONENT_PATH, consumes = MediaType.ALL_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Object> createTemporaryFolder(HttpServletRequest request) throws FileNotFoundException {
-		String uniqueFolderName = uploadService.createTempFolder();
+		String uniqueFolderName = resourceService.createTempFolder();
 		HttpHeaders responseHeader = createResponseHeader(uniqueFolderName, request);
 
 		return new ResponseEntity<Object>(responseHeader, HttpStatus.CREATED);
@@ -54,7 +60,7 @@ public class BirtReportController {
 			throw new IllegalArgumentException("No files provided for upload.");
 		}
 		
-		List<ReportAsset> assetList = uploadService.uploadMultipartFiles(files, uuid);
+		List<ReportAsset> assetList = resourceService.uploadMultipartFiles(files, uuid);
 		
 		return assetList;
 	}
@@ -66,13 +72,13 @@ public class BirtReportController {
 			throw new IllegalArgumentException("No xml file provided for upload.");
 		}
 		
-		uploadService.uploadDataXml(file, uuid);
+		resourceService.uploadDataXml(file, uuid);
 	}
 	
 	@GetMapping(value = COMPONENT_UUID_PATH, consumes = MediaType.ALL_VALUE)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void removeTemporaryFolder(@PathVariable String uuid) {
-		uploadService.removeTemporaryFolder(uuid);
+		resourceService.removeTemporaryFolder(uuid);
 	}
 	
 	private HttpHeaders createResponseHeader(final String uuid, final HttpServletRequest request) {
