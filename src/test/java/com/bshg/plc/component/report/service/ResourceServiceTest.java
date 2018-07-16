@@ -73,7 +73,7 @@ public class ResourceServiceTest {
 		MockMultipartFile mFile = new MockMultipartFile("files", file.getName(), "image/png", TestUtils.readFileAsBytesArray(file));
 		files.add(mFile);
 
-		List<ReportAsset> fileList = resourceService.uploadMultipartFiles(files, folderName);
+		List<ReportAsset> fileList = resourceService.uploadMultipartFiles(folderName, files);
 		assertEquals(1, fileList.size());
 	}
 
@@ -90,7 +90,7 @@ public class ResourceServiceTest {
 		
 		files.addAll(Arrays.asList(file1, file2, file3, file4));
 
-		List<ReportAsset> fileList = resourceService.uploadMultipartFiles(files, folderName);
+		List<ReportAsset> fileList = resourceService.uploadMultipartFiles(folderName, files);
 		assertEquals(4, fileList.size());
 		assertEquals(((ReportAsset) fileList.get(0)).getOrigin(), SAMPLE_IMAGE_1);
 		assertEquals(((ReportAsset) fileList.get(1)).getOrigin(), SAMPLE_IMAGE_2);
@@ -104,7 +104,7 @@ public class ResourceServiceTest {
 		tempFolders.add(folderName);
 		MockMultipartFile file = TestUtils.getMockMultipartFile(XML_REQUEST_PARAM_NAME, SAMPLE_ASSET_FOLDER + SAMPLE_XML);
 		
-		assertEquals(true, resourceService.uploadDataXml(file, folderName));
+		assertEquals(true, resourceService.uploadDataXml(folderName, file));
 		
 		File xmlData = new File(Constants.REPORT_TEMP_UPLOAD_PATH + folderName +"/data.xml");
 		assertEquals(true, xmlData.exists());

@@ -9,7 +9,7 @@ import com.bshg.plc.component.report.domain.ReportAsset;
 
 public interface ResourceService {
 	public String createTempFolder() throws FileNotFoundException;
-	public List<ReportAsset> uploadMultipartFiles(List<MultipartFile> files, String uuid) throws Exception;
-	public boolean uploadDataXml(MultipartFile file, String uuid) throws Exception;
+	public List<ReportAsset> uploadMultipartFiles(String uuid, List<MultipartFile> files) throws Exception;
+	public boolean uploadDataXml(String uuid, MultipartFile file) throws Exception;
 	public boolean removeTemporaryFolder(String uuid);
 }

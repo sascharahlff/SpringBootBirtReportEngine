@@ -3,6 +3,9 @@ package com.bshg.plc.component.report.controller;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -23,6 +26,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.bshg.plc.component.report.constants.Constants;
 import com.bshg.plc.component.report.domain.ReportAsset;
 import com.bshg.plc.component.report.service.ReportService;
 import com.bshg.plc.component.report.service.ResourceService;
@@ -51,13 +55,16 @@ public class ReportController {
 
 	@PostMapping(value = COMPONENT_UUID_RESOURCES_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	@ResponseStatus(HttpStatus.CREATED)
-	public @ResponseBody List<ReportAsset> uploadMultipartFiles(@PathVariable String uuid,
-			@RequestParam("files") List<MultipartFile> files) throws Exception {
+	public @ResponseBody List<ReportAsset> uploadMultipartFiles(@PathVariable String uuid, @RequestParam("files") List<MultipartFile> files) throws Exception {
+		if (!folderExists(uuid)) {
+			throw new FileNotFoundException("Folder '" + uuid + "' does not exists.");
+		}
+
 		if (files == null || files.size() == 0) {
 			throw new IllegalArgumentException("No files provided for upload.");
 		}
 
-		List<ReportAsset> assetList = resourceService.uploadMultipartFiles(files, uuid);
+		List<ReportAsset> assetList = resourceService.uploadMultipartFiles(uuid, files);
 
 		return assetList;
 	}
@@ -65,20 +72,28 @@ public class ReportController {
 	@PostMapping(value = COMPONENT_UUID_DATA_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void uploadXML(@PathVariable String uuid, @RequestParam("data") MultipartFile file) throws Exception {
+		if (!folderExists(uuid)) {
+			throw new FileNotFoundException("Folder '" + uuid + "' does not exists.");
+		}
+
 		if (file == null) {
 			throw new IllegalArgumentException("No xml file provided for upload.");
 		}
 
-		resourceService.uploadDataXml(file, uuid);
+		resourceService.uploadDataXml(uuid, file);
 	}
 
 	@GetMapping(value = COMPONENT_UUID_PATH, consumes = MediaType.ALL_VALUE)
 	public ResponseEntity<byte[]> createReport(@PathVariable String uuid) throws FileNotFoundException, IOException {
+		if (!folderExists(uuid)) {
+			throw new FileNotFoundException("Folder '" + uuid + "' does not exists.");
+		}
+
 		byte[] content = reportService.createReport(uuid);
+		String filename = Constants.DEFAULT_REPORT_NAME;
 
 		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.parseMediaType("application/pdf"));
-		String filename = "bla.pdf";
+		headers.setContentType(MediaType.parseMediaType(MediaType.APPLICATION_PDF_VALUE));
 		headers.setContentDispositionFormData(filename, filename);
 		headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
 		ResponseEntity<byte[]> response = new ResponseEntity<byte[]>(content, headers, HttpStatus.OK);
@@ -88,7 +103,11 @@ public class ReportController {
 
 	@DeleteMapping(value = COMPONENT_UUID_PATH, consumes = MediaType.ALL_VALUE)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void removeTemporaryFolder(@PathVariable String uuid) {
+	public void removeTemporaryFolder(@PathVariable String uuid) throws FileNotFoundException {
+		if (!folderExists(uuid)) {
+			throw new FileNotFoundException("Folder '" + uuid + "' does not exists.");
+		}
+		
 		resourceService.removeTemporaryFolder(uuid);
 	}
 
@@ -99,5 +118,11 @@ public class ReportController {
 		responseHeader.setLocation(location);
 
 		return responseHeader;
+	}
+
+	private boolean folderExists(final String uuid) {
+		Path path = Paths.get(Constants.REPORT_TEMP_UPLOAD_PATH + uuid);
+
+		return Files.exists(path);
 	}
 }

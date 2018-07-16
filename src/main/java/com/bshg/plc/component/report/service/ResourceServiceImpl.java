@@ -13,11 +13,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.bshg.plc.component.report.constants.Constants;
 import com.bshg.plc.component.report.domain.ReportAsset;
+import com.bshg.plc.component.report.utils.ReportUtils;
 
 @Service
 public class ResourceServiceImpl implements ResourceService {
-	private static final String XML_FILE_NAME = "data.xml";
-	
 	@Override
 	public String createTempFolder() throws FileNotFoundException {
 		String uuid = createTemporaryFolder();
@@ -25,53 +24,57 @@ public class ResourceServiceImpl implements ResourceService {
 		if (uuid == null) {
 			throw new FileNotFoundException("Folder '" + uuid + "' could not be created");
 		}
-		
+
 		return uuid;
 	}
 
 	@Override
-	public List<ReportAsset> uploadMultipartFiles(final List<MultipartFile> files, final String uuid) throws Exception {
+	public List<ReportAsset> uploadMultipartFiles(final String uuid, final List<MultipartFile> files) throws Exception {
 		List<ReportAsset> assetList = new ArrayList<ReportAsset>();
-		
+
 		if (files != null) {
 			String filePath = Constants.REPORT_TEMP_UPLOAD_PATH + uuid + "/";
-			
+
 			for (MultipartFile file : files) {
 				String fileUUID = UUID.randomUUID().toString();
-				String fileName = fileUUID +"."+ getFileExtension(file);
+				String fileName = fileUUID + "." + ReportUtils.getFileExtension(file.getOriginalFilename());
+				
 				try {
 					file.transferTo(new File(filePath + fileName));
 				} catch (Exception e) {
 					throw new Exception("Error writing multipart file to directory.");
 				}
-				
+
 				assetList.add(new ReportAsset(file.getOriginalFilename(), fileUUID));
 			}
 		}
-		
+
 		return assetList;
 	}
 
-	
 	@Override
-	public boolean uploadDataXml(MultipartFile file, final String uuid) throws Exception {
+	public boolean uploadDataXml(final String uuid, final MultipartFile file) throws Exception {
 		if (file != null) {
 			try {
-				String filePath = Constants.REPORT_TEMP_UPLOAD_PATH + uuid +"/"+ XML_FILE_NAME;
+				String filePath = Constants.REPORT_TEMP_UPLOAD_PATH + uuid + "/" + Constants.XML_FILE_NAME;
 				file.transferTo(new File(filePath));
 			} catch (Exception e) {
 				throw new Exception("Error writing multipart file to directory.");
 			}
 		}
-		
+
 		return true;
 	}
-	
+
 	@Override
 	public boolean removeTemporaryFolder(String uuid) {
 		File folder = new File(Constants.REPORT_TEMP_UPLOAD_PATH + uuid);
 		
-		return FileUtils.deleteQuietly(folder);
+		if (folder.exists()) {
+			return FileUtils.deleteQuietly(folder);
+		}
+
+		return false;
 	}
 
 	private String createTemporaryFolder() {
@@ -81,12 +84,11 @@ public class ResourceServiceImpl implements ResourceService {
 		try {
 			if (!folder.exists()) {
 				boolean created = folder.mkdir();
-				
+
 				if (created) {
 					return uuid;
 				}
-			}
-			else {
+			} else {
 				return uuid;
 			}
 		} catch (Exception e) {
@@ -95,15 +97,4 @@ public class ResourceServiceImpl implements ResourceService {
 
 		return null;
 	}
-	
-	private String getFileExtension(MultipartFile file) {
-		String fileExtension = FilenameUtils.getExtension(file.getOriginalFilename());
-		
-		if (!fileExtension.isEmpty()) {
-			return fileExtension;
-		}
-		
-		return "";
-	}
-
 }
