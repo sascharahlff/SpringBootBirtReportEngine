@@ -1,6 +1,7 @@
 package com.bshg.plc.component.report.service;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -9,7 +10,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.logging.Level;
 
 import javax.annotation.PostConstruct;
@@ -71,10 +71,10 @@ public class ReportServiceImpl implements ReportService {
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public String createReport(String uuid) throws IOException {
+	public byte[] createReport(String uuid) throws IOException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		String reportPath = REPORT_PATH + "bsh.rptdesign";
-		String outputFile = "";
-		
+
 		System.out.println(reportPath);
 
 		// Get report design
@@ -82,38 +82,36 @@ public class ReportServiceImpl implements ReportService {
 
 		if (reportDesign == null) {
 			throw new FileNotFoundException("Report Design does not exist");
-		}
-		else {
-			// Unique pdf name
-			// TODO String fileName = UUID.randomUUID().toString() + "." + RenderOption.OUTPUT_FORMAT_PDF;
-			String fileName = "result." + RenderOption.OUTPUT_FORMAT_PDF;
+		} else {
 			IRunAndRenderTask task = engine.createRunAndRenderTask(reportDesign);
-			String path = "./reports/temp/" + uuid +"/data.xml";
+			String path = "./reports/temp/" + uuid + "/data.xml";
 
 			byte[] encoded = Files.readAllBytes(Paths.get(path));
-			
+
 			// Override XML structure in report
 			ByteArrayInputStream byteArray = new ByteArrayInputStream(encoded);
 			Map<String, ByteArrayInputStream> appContext = task.getAppContext();
 			appContext.put("org.eclipse.datatools.enablement.oda.xml.inputStream", byteArray);
 
-			// PDF name and location
-			RenderOption renderOption = new PDFRenderOption();
+			PDFRenderOption renderOption = new PDFRenderOption();
 			renderOption.setOutputFormat(RenderOption.OUTPUT_FORMAT_PDF);
-			renderOption.setOutputFileName(OUTPUT_PATH + fileName);
+			renderOption.setOutputStream(baos);
 			task.setRenderOption(renderOption);
-
+			
 			try {
 				task.run();
-				outputFile = fileName;
-			} catch (EngineException e) {
+			}
+			catch (EngineException e) {
 				System.out.println("error");
+			}
+			finally {
+				task.close();
 			}
 		}
 
-		return outputFile;
+		return baos.toByteArray();
 	}
-	
+
 	@Override
 	public ResponseEntity<InputStreamResource> getReport(String report) throws FileNotFoundException {
 		File reportFile = new File(OUTPUT_PATH + report);
@@ -143,3 +141,48 @@ public class ReportServiceImpl implements ReportService {
 		}
 	}
 }
+
+//@Override
+//@SuppressWarnings("unchecked")
+//public String createReport(String uuid) throws IOException {
+//	String reportPath = REPORT_PATH + "bsh.rptdesign";
+//	String outputFile = "";
+//	
+//	System.out.println(reportPath);
+//
+//	// Get report design
+//	IReportRunnable reportDesign = getReportDesign(reportPath);
+//
+//	if (reportDesign == null) {
+//		throw new FileNotFoundException("Report Design does not exist");
+//	}
+//	else {
+//		// Unique pdf name
+//		// TODO String fileName = UUID.randomUUID().toString() + "." + RenderOption.OUTPUT_FORMAT_PDF;
+//		String fileName = "result." + RenderOption.OUTPUT_FORMAT_PDF;
+//		IRunAndRenderTask task = engine.createRunAndRenderTask(reportDesign);
+//		String path = "./reports/temp/" + uuid +"/data.xml";
+//
+//		byte[] encoded = Files.readAllBytes(Paths.get(path));
+//		
+//		// Override XML structure in report
+//		ByteArrayInputStream byteArray = new ByteArrayInputStream(encoded);
+//		Map<String, ByteArrayInputStream> appContext = task.getAppContext();
+//		appContext.put("org.eclipse.datatools.enablement.oda.xml.inputStream", byteArray);
+//
+//		// PDF name and location
+//		RenderOption renderOption = new PDFRenderOption();
+//		renderOption.setOutputFormat(RenderOption.OUTPUT_FORMAT_PDF);
+//		renderOption.setOutputFileName(OUTPUT_PATH + fileName);
+//		task.setRenderOption(renderOption);
+//
+//		try {
+//			task.run();
+//			outputFile = fileName;
+//		} catch (EngineException e) {
+//			System.out.println("error");
+//		}
+//	}
+//
+//	return outputFile;
+//}

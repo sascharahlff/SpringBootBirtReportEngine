@@ -49,7 +49,7 @@ public class ReportServiceTest {
 		}
 	}
 
-	//@Test
+	@Test
 	public void createReport() throws Exception {
 //		List<MultipartFile> files = new ArrayList<MultipartFile>();
 //
@@ -69,6 +69,7 @@ public class ReportServiceTest {
 //		resourceService.uploadDataXml(file, folderName);
 
 		// Prefill report
-		reportService.createReport("d6e17719-63da-4720-ab4e-ad2f2557de24");
+		byte[] bytes = reportService.createReport("d6e17719-63da-4720-ab4e-ad2f2557de24");
+		System.out.println(bytes);
 	}
 }

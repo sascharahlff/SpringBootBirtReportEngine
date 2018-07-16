@@ -1,6 +1,7 @@
 package com.bshg.plc.component.report.controller;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 
@@ -11,6 +12,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -39,12 +41,6 @@ public class ReportController {
 	@Autowired
 	ResourceService resourceService;
 
-
-	@GetMapping(value = COMPONENT_PATH, consumes = MediaType.ALL_VALUE)
-	public ResponseEntity<byte[]> createReport() {
-		return null;
-	}
-
 	@PostMapping(value = COMPONENT_PATH, consumes = MediaType.ALL_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Object> createTemporaryFolder(HttpServletRequest request) throws FileNotFoundException {
 		String uniqueFolderName = resourceService.createTempFolder();
@@ -52,16 +48,17 @@ public class ReportController {
 
 		return new ResponseEntity<Object>(responseHeader, HttpStatus.CREATED);
 	}
-	
+
 	@PostMapping(value = COMPONENT_UUID_RESOURCES_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	@ResponseStatus(HttpStatus.CREATED)
-	public @ResponseBody List<ReportAsset> uploadMultipartFiles(@PathVariable String uuid, @RequestParam("files") List<MultipartFile> files) throws Exception {
+	public @ResponseBody List<ReportAsset> uploadMultipartFiles(@PathVariable String uuid,
+			@RequestParam("files") List<MultipartFile> files) throws Exception {
 		if (files == null || files.size() == 0) {
 			throw new IllegalArgumentException("No files provided for upload.");
 		}
-		
+
 		List<ReportAsset> assetList = resourceService.uploadMultipartFiles(files, uuid);
-		
+
 		return assetList;
 	}
 
@@ -71,16 +68,30 @@ public class ReportController {
 		if (file == null) {
 			throw new IllegalArgumentException("No xml file provided for upload.");
 		}
-		
+
 		resourceService.uploadDataXml(file, uuid);
 	}
-	
+
 	@GetMapping(value = COMPONENT_UUID_PATH, consumes = MediaType.ALL_VALUE)
+	public ResponseEntity<byte[]> createReport(@PathVariable String uuid) throws FileNotFoundException, IOException {
+		byte[] content = reportService.createReport(uuid);
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.parseMediaType("application/pdf"));
+		String filename = "bla.pdf";
+		headers.setContentDispositionFormData(filename, filename);
+		headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+		ResponseEntity<byte[]> response = new ResponseEntity<byte[]>(content, headers, HttpStatus.OK);
+
+		return response;
+	}
+
+	@DeleteMapping(value = COMPONENT_UUID_PATH, consumes = MediaType.ALL_VALUE)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void removeTemporaryFolder(@PathVariable String uuid) {
 		resourceService.removeTemporaryFolder(uuid);
 	}
-	
+
 	private HttpHeaders createResponseHeader(final String uuid, final HttpServletRequest request) {
 		String currentUrl = request.getRequestURL().toString();
 		URI location = URI.create(currentUrl + "/" + uuid);
