@@ -4,7 +4,7 @@ public class ReportAsset {
 	String origin = "";
 	String uuid = "";
 
-	// Object Mapper needs empty constructor
+	// Jackson object mapper needs empty constructor
 	public ReportAsset() {
 		super();
 	}

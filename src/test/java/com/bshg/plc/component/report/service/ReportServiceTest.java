@@ -26,7 +26,6 @@ import com.bshg.plc.component.report.utils.TestUtils;
 @SpringBootTest(classes = Application.class)
 @AutoConfigureMockMvc
 public class ReportServiceTest {
-	private static final String MULTIPART_REQUEST_PARAM_NAME = "files";
 	private static final String SAMPLE_IMAGE_FOLDER = "classpath:images/";
 	private static final String SAMPLE_IMAGE_1 = "hasi.png";
 	private static final String SAMPLE_IMAGE_2 = "cozmo1.png";
@@ -56,9 +55,9 @@ public class ReportServiceTest {
 		tempFolders.add(folderName);
 
 		// Upload images to temporary folder
-		MockMultipartFile file1 = TestUtils.getMockMultipartFile(MULTIPART_REQUEST_PARAM_NAME, SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_1);
-		MockMultipartFile file2 = TestUtils.getMockMultipartFile(MULTIPART_REQUEST_PARAM_NAME, SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_2);
-		MockMultipartFile file3 = TestUtils.getMockMultipartFile(MULTIPART_REQUEST_PARAM_NAME, SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_3);
+		MockMultipartFile file1 = TestUtils.getMockMultipartFile(Constants.REQUEST_PARAM_MULTIPART, SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_1);
+		MockMultipartFile file2 = TestUtils.getMockMultipartFile(Constants.REQUEST_PARAM_MULTIPART, SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_2);
+		MockMultipartFile file3 = TestUtils.getMockMultipartFile(Constants.REQUEST_PARAM_MULTIPART, SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_3);
 		files.addAll(Arrays.asList(file1, file2, file3));
 		List<ReportAsset> fileList = resourceService.uploadMultipartFiles(folderName, files);
 

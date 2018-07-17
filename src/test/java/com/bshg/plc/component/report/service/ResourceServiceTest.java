@@ -29,8 +29,6 @@ import com.bshg.plc.component.report.utils.TestUtils;
 @SpringBootTest(classes = Application.class)
 @AutoConfigureMockMvc
 public class ResourceServiceTest {
-	private static final String MULTIPART_REQUEST_PARAM_NAME = "files";
-	private static final String XML_REQUEST_PARAM_NAME = "data";
 	private static final String SAMPLE_ASSET_FOLDER = "classpath:assets/";
 	private static final String SAMPLE_IMAGE_FOLDER = "classpath:images/";
 	private static final String SAMPLE_IMAGE_1 = "hasi.png";
@@ -70,7 +68,7 @@ public class ResourceServiceTest {
 		File file = ResourceUtils.getFile(SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_1);
 		assertEquals(true, file.exists());
 
-		MockMultipartFile mFile = new MockMultipartFile("files", file.getName(), "image/png", TestUtils.readFileAsBytesArray(file));
+		MockMultipartFile mFile = new MockMultipartFile(Constants.REQUEST_PARAM_MULTIPART, file.getName(), "image/png", TestUtils.readFileAsBytesArray(file));
 		files.add(mFile);
 
 		List<ReportAsset> fileList = resourceService.uploadMultipartFiles(folderName, files);
@@ -83,10 +81,10 @@ public class ResourceServiceTest {
 		List<MultipartFile> files = new ArrayList<MultipartFile>();
 		tempFolders.add(folderName);
 
-		MockMultipartFile file1 = TestUtils.getMockMultipartFile(MULTIPART_REQUEST_PARAM_NAME, SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_1);
-		MockMultipartFile file2 = TestUtils.getMockMultipartFile(MULTIPART_REQUEST_PARAM_NAME, SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_2);
-		MockMultipartFile file3 = TestUtils.getMockMultipartFile(MULTIPART_REQUEST_PARAM_NAME, SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_3);
-		MockMultipartFile file4 = TestUtils.getMockMultipartFile(MULTIPART_REQUEST_PARAM_NAME, SAMPLE_ASSET_FOLDER + SAMPLE_XML);
+		MockMultipartFile file1 = TestUtils.getMockMultipartFile(Constants.REQUEST_PARAM_MULTIPART, SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_1);
+		MockMultipartFile file2 = TestUtils.getMockMultipartFile(Constants.REQUEST_PARAM_MULTIPART, SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_2);
+		MockMultipartFile file3 = TestUtils.getMockMultipartFile(Constants.REQUEST_PARAM_MULTIPART, SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_3);
+		MockMultipartFile file4 = TestUtils.getMockMultipartFile(Constants.REQUEST_PARAM_MULTIPART, SAMPLE_ASSET_FOLDER + SAMPLE_XML);
 		
 		files.addAll(Arrays.asList(file1, file2, file3, file4));
 
@@ -102,8 +100,8 @@ public class ResourceServiceTest {
 	public void uploadXmlFile() throws Exception {
 		String folderName = resourceService.createTempFolder();
 		tempFolders.add(folderName);
-		MockMultipartFile file = TestUtils.getMockMultipartFile(XML_REQUEST_PARAM_NAME, SAMPLE_ASSET_FOLDER + SAMPLE_XML);
 		
+		MockMultipartFile file = TestUtils.getMockMultipartFile(Constants.REQUEST_PARAM_XML, SAMPLE_ASSET_FOLDER + SAMPLE_XML);
 		assertEquals(true, resourceService.uploadDataXml(folderName, file));
 		
 		File xmlData = new File(Constants.REPORT_TEMP_UPLOAD_PATH + folderName +"/data.xml");

@@ -54,7 +54,7 @@ public class ReportController {
 
 	@PostMapping(value = COMPONENT_UUID_RESOURCES_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	@ResponseStatus(HttpStatus.CREATED)
-	public @ResponseBody List<ReportAsset> uploadMultipartFiles(@PathVariable String uuid, @RequestParam("files") List<MultipartFile> files) throws Exception {
+	public @ResponseBody List<ReportAsset> uploadMultipartFiles(@PathVariable String uuid, @RequestParam(Constants.REQUEST_PARAM_MULTIPART) List<MultipartFile> files) throws Exception {
 		if (!folderExists(uuid)) {
 			throw new FileNotFoundException("Folder '" + uuid + "' does not exists.");
 		}
@@ -70,7 +70,7 @@ public class ReportController {
 
 	@PostMapping(value = COMPONENT_UUID_DATA_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void uploadXML(@PathVariable String uuid, @RequestParam("data") MultipartFile file) throws Exception {
+	public void uploadXML(@PathVariable String uuid, @RequestParam(Constants.REQUEST_PARAM_XML) MultipartFile file) throws Exception {
 		if (!folderExists(uuid)) {
 			throw new FileNotFoundException("Folder '" + uuid + "' does not exists.");
 		}
@@ -83,6 +83,7 @@ public class ReportController {
 	}
 
 	@GetMapping(value = COMPONENT_UUID_PATH, consumes = MediaType.ALL_VALUE)
+	@ResponseStatus(HttpStatus.OK)
 	public ResponseEntity<byte[]> createReport(@PathVariable String uuid) throws Exception {
 		if (!folderExists(uuid)) {
 			throw new FileNotFoundException("Folder '" + uuid + "' does not exists.");
