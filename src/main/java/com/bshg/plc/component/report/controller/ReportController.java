@@ -1,7 +1,6 @@
 package com.bshg.plc.component.report.controller;
 
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -84,7 +83,7 @@ public class ReportController {
 	}
 
 	@GetMapping(value = COMPONENT_UUID_PATH, consumes = MediaType.ALL_VALUE)
-	public ResponseEntity<byte[]> createReport(@PathVariable String uuid) throws FileNotFoundException, IOException {
+	public ResponseEntity<byte[]> createReport(@PathVariable String uuid) throws Exception {
 		if (!folderExists(uuid)) {
 			throw new FileNotFoundException("Folder '" + uuid + "' does not exists.");
 		}
@@ -107,7 +106,7 @@ public class ReportController {
 		if (!folderExists(uuid)) {
 			throw new FileNotFoundException("Folder '" + uuid + "' does not exists.");
 		}
-		
+
 		resourceService.removeTemporaryFolder(uuid);
 	}
 

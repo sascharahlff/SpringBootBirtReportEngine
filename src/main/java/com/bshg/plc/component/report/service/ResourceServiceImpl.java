@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -38,7 +37,7 @@ public class ResourceServiceImpl implements ResourceService {
 			for (MultipartFile file : files) {
 				String fileUUID = UUID.randomUUID().toString();
 				String fileName = fileUUID + "." + ReportUtils.getFileExtension(file.getOriginalFilename());
-				
+
 				try {
 					file.transferTo(new File(filePath + fileName));
 				} catch (Exception e) {
@@ -69,7 +68,7 @@ public class ResourceServiceImpl implements ResourceService {
 	@Override
 	public boolean removeTemporaryFolder(String uuid) {
 		File folder = new File(Constants.REPORT_TEMP_UPLOAD_PATH + uuid);
-		
+
 		if (folder.exists()) {
 			return FileUtils.deleteQuietly(folder);
 		}

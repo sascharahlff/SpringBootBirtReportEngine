@@ -1,5 +1,6 @@
 package com.bshg.plc.component.report.controller;
 
+import static org.junit.Assert.assertNotEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -27,8 +28,11 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import com.bshg.plc.component.report.Application;
 import com.bshg.plc.component.report.constants.Constants;
+import com.bshg.plc.component.report.domain.ReportAsset;
 import com.bshg.plc.component.report.service.ReportService;
+import com.bshg.plc.component.report.utils.ReportUtils;
 import com.bshg.plc.component.report.utils.TestUtils;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -66,14 +70,14 @@ public class ReportControllerTest {
 		}
 	}
 
-	@Test
+	// TODO @Test
 	public void createTemporaryFolder() throws Exception {
 		MvcResult result = mockMvc.perform(post("/report/component")).andExpect(status().is(HttpStatus.CREATED.value())).andReturn();
 		String location = result.getResponse().getHeader("Location");
 		addFolderToDelete(location);
 	}
 
-	@Test
+	// TODO @Test
 	public void uploadFileToTempFolder() throws Exception {
 		MvcResult result = mockMvc.perform(post("/report/component")).andExpect(status().is(HttpStatus.CREATED.value())).andReturn();
 		String location = result.getResponse().getHeader("Location");
@@ -86,7 +90,7 @@ public class ReportControllerTest {
 				.andExpect(jsonPath("$", Matchers.hasSize(1)));
 	}
 
-	@Test
+	// TODO @Test
 	public void uploadMultipleFilesToTempFolder() throws Exception {
 		MvcResult result = mockMvc.perform(post("/report/component")).andExpect(status().is(HttpStatus.CREATED.value())).andReturn();
 		String location = result.getResponse().getHeader("Location");
@@ -107,7 +111,7 @@ public class ReportControllerTest {
 				.andExpect(jsonPath("$.[3].origin", Matchers.is(SAMPLE_XML)));
 	}
 
-	@Test
+	// TODO @Test
 	public void uploadXmlFile() throws Exception {
 		MvcResult result = mockMvc.perform(post("/report/component")).andExpect(status().is(HttpStatus.CREATED.value())).andReturn();
 		String location = result.getResponse().getHeader("Location");
@@ -115,24 +119,73 @@ public class ReportControllerTest {
 
 		MockMultipartFile file = TestUtils.getMockMultipartFile(XML_REQUEST_PARAM_NAME, SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_1);
 		
-		System.out.println(location + DATA_PATH);
 		mockMvc.perform(MockMvcRequestBuilders.multipart(location + "/data")
 				.file(file))
 				.andExpect(status().is(HttpStatus.NO_CONTENT.value()));
 	}
 
 	@Test
+	public void createReport() throws Exception {
+		// Create temporary folder
+		MvcResult result = mockMvc.perform(post("/report/component")).andExpect(status().is(HttpStatus.CREATED.value())).andReturn();
+		String location = result.getResponse().getHeader("Location");
+		String folderName = getUUIDFromLocation(location);
+		//addFolderToDelete(location);
+		
+		// Upload images to temporary folder
+		MockMultipartFile file1 = TestUtils.getMockMultipartFile(MULTIPART_REQUEST_PARAM_NAME, SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_1);
+		MockMultipartFile file2 = TestUtils.getMockMultipartFile(MULTIPART_REQUEST_PARAM_NAME, SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_2);
+		MockMultipartFile file3 = TestUtils.getMockMultipartFile(MULTIPART_REQUEST_PARAM_NAME, SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_3);
+		result = mockMvc.perform(MockMvcRequestBuilders.multipart(location + RESOURCES_PATH).file(file1).file(file2).file(file3)).andReturn();
+	
+		List<ReportAsset> fileList = mapper.readValue(result.getResponse().getContentAsString(), new TypeReference<List<ReportAsset>>() {});
+
+		// Create data.xml
+		StringBuilder xml = new StringBuilder();
+		xml.append("<?xml version=\"1.0\"?><data>");
+		xml.append("<name>Biff Tannen</name>");
+		String reportPath = Constants.REPORT_TEMP_UPLOAD_PATH.replace("./", "");
+		int row = 1;
+
+		for (ReportAsset asset : fileList) {
+			String extension = ReportUtils.getFileExtension(asset.getOrigin());
+			String assetName = asset.getUuid() + "." + extension;
+
+			if (row == 1) {
+				xml.append("<firstImage>" + reportPath + folderName + "/" + assetName + "</firstImage>");
+			} else if (row == 2) {
+				xml.append("<secondImage>" + reportPath + folderName + "/" + assetName + "</secondImage>");
+			} else if (row == 3) {
+				xml.append("<thirdImage>" + reportPath + folderName + "/" + assetName + "</thirdImage>");
+			}
+
+			row++;
+		}
+
+		xml.append("</data>");
+		
+		// Write data.xml to temporary folder
+		java.io.FileWriter fileWriter = new java.io.FileWriter(Constants.REPORT_TEMP_UPLOAD_PATH + folderName +"/"+ Constants.XML_FILE_NAME);
+		fileWriter.write(xml.toString());
+		fileWriter.close();
+
+		// Upload data.xml to temporary folder
+		MockMultipartFile file = TestUtils.getMockMultipartFile(XML_REQUEST_PARAM_NAME, Constants.REPORT_TEMP_UPLOAD_PATH + folderName +"/"+ Constants.XML_FILE_NAME);
+		mockMvc.perform(MockMvcRequestBuilders.multipart(location + "/data").file(file)).andReturn();
+
+		
+		
+		byte[] byteArray = result.getResponse().getContentAsByteArray();
+		assertNotEquals(0, byteArray.length);
+	}
+	
+	// TODO @Test
 	public void removeTemporaryFolder() throws Exception {
 		MvcResult result = mockMvc.perform(post("/report/component")).andExpect(status().is(HttpStatus.CREATED.value())).andReturn();
 		String location = result.getResponse().getHeader("Location");
 		String uuid = getUUIDFromLocation(location);
 
 		mockMvc.perform(get("/report/component/" + uuid)).andExpect(status().is(HttpStatus.NO_CONTENT.value()));
-	}
-
-	@Test
-	public void createPDF() {
-		
 	}
 	
 	// Helper-Function to delete all created folders
