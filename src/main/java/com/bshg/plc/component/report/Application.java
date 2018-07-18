@@ -1,4 +1,4 @@
-package de.itemis.birt;
+package com.bshg.plc.component.report;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;

@@ -1,2 +1,4 @@
 server:
   port: 8080
+report:
+  input: '/Users/sascha/repos/SpringBootBirtReportEngine/src/main/resources/reports/'
