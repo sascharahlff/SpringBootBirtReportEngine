@@ -85,12 +85,12 @@ public class ReportControllerTest {
 		String location = result.getResponse().getHeader("Location");
 		addFolderToDelete(location);
 
-		// Create a multipart file to upload
+		// Create multipart file to upload
 		MockMultipartFile file = TestUtils.getMockMultipartFile(Constants.REQUEST_PARAM_MULTIPART, SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_1);
 
-		// Upload a file to temporary folder
+		// Upload file to temporary folder
 		mockMvc.perform(MockMvcRequestBuilders.multipart(location + "/resources").file(file))
-				.andExpect(status().is(HttpStatus.CREATED.value())).andExpect(jsonPath("$").isArray())
+				.andExpect(status().is(HttpStatus.OK.value())).andExpect(jsonPath("$").isArray())
 				.andExpect(jsonPath("$", Matchers.hasSize(1)));
 	}
 
@@ -110,7 +110,7 @@ public class ReportControllerTest {
 		// Upload files to temporary folder
 		mockMvc.perform(MockMvcRequestBuilders.multipart(location + RESOURCES_PATH)
 				.file(file1).file(file2).file(file3).file(file4))
-				.andExpect(status().is(HttpStatus.CREATED.value())).andExpect(jsonPath("$").isArray())
+				.andExpect(status().is(HttpStatus.OK.value())).andExpect(jsonPath("$").isArray())
 				.andExpect(jsonPath("$", Matchers.hasSize(4)))
 				.andExpect(jsonPath("$.[0].origin", Matchers.is(SAMPLE_IMAGE_1)))
 				.andExpect(jsonPath("$.[1].origin", Matchers.is(SAMPLE_IMAGE_2)))

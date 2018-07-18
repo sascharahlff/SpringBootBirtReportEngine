@@ -17,7 +17,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.util.ResourceUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.bshg.plc.component.report.Application;
@@ -69,18 +68,15 @@ public class ResourceServiceTest {
 		// Create temporary folder
 		String folderName = resourceService.createTempFolder();
 		tempFolders.add(folderName);
-
-		// Create a multipart file to upload
-		File file = ResourceUtils.getFile(SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_1);
-		assertEquals(true, file.exists());
-
-		// Upload a file to temporary folder
-		MockMultipartFile mFile = new MockMultipartFile(Constants.REQUEST_PARAM_MULTIPART, file.getName(), "image/png", TestUtils.readFileAsBytesArray(file));
-		files.add(mFile);
 		
-		// Check if file exists
+		// Create multipart file to upload
+		MockMultipartFile file = TestUtils.getMockMultipartFile(Constants.REQUEST_PARAM_MULTIPART, SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_1);
+		files.add(file);
+		
+		// Upload file and check if file exists
 		List<ReportAsset> fileList = resourceService.uploadMultipartFiles(folderName, files);
 		assertEquals(1, fileList.size());
+		assertEquals(((ReportAsset) fileList.get(0)).getOrigin(), SAMPLE_IMAGE_1);
 	}
 
 	@Test
@@ -98,7 +94,7 @@ public class ResourceServiceTest {
 		MockMultipartFile file4 = TestUtils.getMockMultipartFile(Constants.REQUEST_PARAM_MULTIPART, SAMPLE_ASSET_FOLDER + SAMPLE_XML);
 		files.addAll(Arrays.asList(file1, file2, file3, file4));
 	
-		// Check if files exists
+		// Upload files and check if all files exists
 		List<ReportAsset> fileList = resourceService.uploadMultipartFiles(folderName, files);
 		assertEquals(4, fileList.size());
 		assertEquals(((ReportAsset) fileList.get(0)).getOrigin(), SAMPLE_IMAGE_1);

@@ -54,7 +54,7 @@ public class ReportController {
 	}
 
 	@PostMapping(value = COMPONENT_UUID_RESOURCES_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	@ResponseStatus(HttpStatus.CREATED)
+	@ResponseStatus(HttpStatus.OK)
 	public @ResponseBody List<ReportAsset> uploadMultipartFiles(@PathVariable String uuid, @RequestParam(Constants.REQUEST_PARAM_MULTIPART) List<MultipartFile> files) throws Exception {
 		if (!folderExists(uuid)) {
 			throw new FileNotFoundException("Folder '" + uuid + "' does not exists.");
