@@ -1,5 +1,6 @@
 package com.bshg.plc.component.report.domain;
 
+// JSON response item
 public class ReportAsset {
 	String origin = "";
 	String uuid = "";

@@ -28,13 +28,15 @@ import com.bshg.plc.component.report.constants.Constants;
 
 @Service
 public class ReportServiceImpl implements ReportService {
+	// Value from application.yml
 	@Value("${report.input}")
 	private String REPORT_PATH;
+	
 	private IReportEngine engine = null;
 
 	@PostConstruct
 	public void init() throws BirtException {
-		System.out.println("report engine startup");
+		// Start BIRT report engine
 		EngineConfig engineConfig = new EngineConfig();
 		engineConfig.setLogConfig(Constants.BIRT_LOG_PATH, Level.WARNING);
 
@@ -46,15 +48,15 @@ public class ReportServiceImpl implements ReportService {
 
 	@PreDestroy
 	public void destroy() {
+		// Stop and destroy BIRT report engine
 		engine.destroy();
 		Platform.shutdown();
-		System.out.println("report engine destroyed");
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
 	public byte[] createReport(String uuid) throws Exception {
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		String reportPath = REPORT_PATH + "bsh.rptdesign";
 
 		// Get report design
@@ -64,26 +66,31 @@ public class ReportServiceImpl implements ReportService {
 			throw new FileNotFoundException("Report Design does not exist");
 		}
 		else {
+			// Create task to render the report
 			IRunAndRenderTask task = engine.createRunAndRenderTask(reportDesign);
 			String path = Constants.REPORT_TEMP_UPLOAD_PATH + uuid + "/" + Constants.XML_FILE_NAME;
 
+			// Read data.xml from temporary folder
 			byte[] encoded = Files.readAllBytes(Paths.get(path));
 
 			// Override XML structure in report
 			ByteArrayInputStream byteArray = new ByteArrayInputStream(encoded);
 			Map<String, ByteArrayInputStream> appContext = task.getAppContext();
+			// Set report data source via byte array
 			appContext.put("org.eclipse.datatools.enablement.oda.xml.inputStream", byteArray);
 
+			// Set PDF file format and output format
 			PDFRenderOption renderOption = new PDFRenderOption();
 			renderOption.setOutputFormat(RenderOption.OUTPUT_FORMAT_PDF);
-			renderOption.setOutputStream(baos);
+			renderOption.setOutputStream(outputStream);
 
+			// Run task with render options
 			task.setRenderOption(renderOption);
 			task.run();
 			task.close();
 		}
 
-		return baos.toByteArray();
+		return outputStream.toByteArray();
 	}
 
 	private IReportRunnable getReportDesign(String reportPath) {

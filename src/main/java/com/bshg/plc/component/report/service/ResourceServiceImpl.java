@@ -18,6 +18,7 @@ import com.bshg.plc.component.report.utils.ReportUtils;
 public class ResourceServiceImpl implements ResourceService {
 	@Override
 	public String createTempFolder() throws FileNotFoundException {
+		// Create temporary folder
 		String uuid = createTemporaryFolder();
 
 		if (uuid == null) {
@@ -29,16 +30,21 @@ public class ResourceServiceImpl implements ResourceService {
 
 	@Override
 	public List<ReportAsset> uploadMultipartFiles(final String uuid, final List<MultipartFile> files) throws Exception {
+		// Return list of uploaded files with unique file names
 		List<ReportAsset> assetList = new ArrayList<ReportAsset>();
 
 		if (files != null) {
+			// Path to temporary folder
 			String filePath = Constants.REPORT_TEMP_UPLOAD_PATH + uuid + "/";
 
+			// Do multipart file upload
 			for (MultipartFile file : files) {
+				// Create unique file name
 				String fileUUID = UUID.randomUUID().toString();
 				String fileName = fileUUID + "." + ReportUtils.getFileExtension(file.getOriginalFilename());
 
 				try {
+					// Upload file in temporary folder
 					file.transferTo(new File(filePath + fileName));
 				} catch (Exception e) {
 					throw new Exception("Error writing multipart file to directory.");
@@ -55,6 +61,7 @@ public class ResourceServiceImpl implements ResourceService {
 	public boolean uploadDataXml(final String uuid, final MultipartFile file) throws Exception {
 		if (file != null) {
 			try {
+				// Upload xml file as "data.xml" in temporary folder
 				String filePath = Constants.REPORT_TEMP_UPLOAD_PATH + uuid + "/" + Constants.XML_FILE_NAME;
 				file.transferTo(new File(filePath));
 			} catch (Exception e) {
@@ -69,6 +76,7 @@ public class ResourceServiceImpl implements ResourceService {
 	public boolean removeTemporaryFolder(String uuid) {
 		File folder = new File(Constants.REPORT_TEMP_UPLOAD_PATH + uuid);
 
+		// Remove temoporary folder and files
 		if (folder.exists()) {
 			return FileUtils.deleteQuietly(folder);
 		}

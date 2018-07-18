@@ -46,8 +46,9 @@ public class ReportController {
 
 	@PostMapping(value = COMPONENT_PATH, consumes = MediaType.ALL_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Object> createTemporaryFolder(HttpServletRequest request) throws FileNotFoundException {
-		String uniqueFolderName = resourceService.createTempFolder();
-		HttpHeaders responseHeader = createResponseHeader(uniqueFolderName, request);
+		// Create temporary folder and return a header location
+		String folderName = resourceService.createTempFolder();
+		HttpHeaders responseHeader = createResponseHeader(folderName, request);
 
 		return new ResponseEntity<Object>(responseHeader, HttpStatus.CREATED);
 	}
@@ -63,6 +64,7 @@ public class ReportController {
 			throw new IllegalArgumentException("No files provided for upload.");
 		}
 
+		// Upload multipart files and return JSON response (filename and corresponding uuid)
 		List<ReportAsset> assetList = resourceService.uploadMultipartFiles(uuid, files);
 
 		return assetList;
@@ -79,6 +81,7 @@ public class ReportController {
 			throw new IllegalArgumentException("No xml file provided for upload.");
 		}
 
+		// Upload XML structure
 		resourceService.uploadDataXml(uuid, file);
 	}
 
@@ -89,14 +92,16 @@ public class ReportController {
 			throw new FileNotFoundException("Folder '" + uuid + "' does not exists.");
 		}
 
+		// Create PDF report and return byte array
 		byte[] content = reportService.createReport(uuid);
 		String filename = Constants.DEFAULT_REPORT_NAME;
-
-		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.parseMediaType(MediaType.APPLICATION_PDF_VALUE));
-		headers.setContentDispositionFormData(filename, filename);
-		headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
-		ResponseEntity<byte[]> response = new ResponseEntity<byte[]>(content, headers, HttpStatus.OK);
+		
+		// Set response header to return PDF report as byte array
+		HttpHeaders header = new HttpHeaders();
+		header.setContentType(MediaType.parseMediaType(MediaType.APPLICATION_PDF_VALUE));
+		header.setContentDispositionFormData(filename, filename);
+		header.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+		ResponseEntity<byte[]> response = new ResponseEntity<byte[]>(content, header, HttpStatus.OK);
 
 		return response;
 	}
@@ -107,11 +112,13 @@ public class ReportController {
 		if (!folderExists(uuid)) {
 			throw new FileNotFoundException("Folder '" + uuid + "' does not exists.");
 		}
-
+		
+		// Remove temporary folder and files
 		resourceService.removeTemporaryFolder(uuid);
 	}
 
 	private HttpHeaders createResponseHeader(final String uuid, final HttpServletRequest request) {
+		// Create a header location
 		String currentUrl = request.getRequestURL().toString();
 		URI location = URI.create(currentUrl + "/" + uuid);
 		HttpHeaders responseHeader = new HttpHeaders();
@@ -121,6 +128,7 @@ public class ReportController {
 	}
 
 	private boolean folderExists(final String uuid) {
+		// Check if temporary folder exists
 		Path path = Paths.get(Constants.REPORT_TEMP_UPLOAD_PATH + uuid);
 
 		return Files.exists(path);
