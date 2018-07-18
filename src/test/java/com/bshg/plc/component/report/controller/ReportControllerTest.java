@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,6 +62,7 @@ public class ReportControllerTest {
 
 	@After
 	public void removeAllTemporaryFolders() {
+		// Remove all test folders and files
 		for (String uuid : tempFolders) {
 			File folder = new File(Constants.REPORT_TEMP_UPLOAD_PATH + uuid);
 
@@ -70,6 +72,7 @@ public class ReportControllerTest {
 
 	@Test
 	public void createTemporaryFolder() throws Exception {
+		// Create temporary folder
 		MvcResult result = mockMvc.perform(post("/report/component")).andExpect(status().is(HttpStatus.CREATED.value())).andReturn();
 		String location = result.getResponse().getHeader("Location");
 		addFolderToDelete(location);
@@ -77,12 +80,15 @@ public class ReportControllerTest {
 
 	@Test
 	public void uploadFileToTempFolder() throws Exception {
+		// Create temporary folder
 		MvcResult result = mockMvc.perform(post("/report/component")).andExpect(status().is(HttpStatus.CREATED.value())).andReturn();
 		String location = result.getResponse().getHeader("Location");
 		addFolderToDelete(location);
 
+		// Create a multipart file to upload
 		MockMultipartFile file = TestUtils.getMockMultipartFile(Constants.REQUEST_PARAM_MULTIPART, SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_1);
 
+		// Upload a file to temporary folder
 		mockMvc.perform(MockMvcRequestBuilders.multipart(location + "/resources").file(file))
 				.andExpect(status().is(HttpStatus.CREATED.value())).andExpect(jsonPath("$").isArray())
 				.andExpect(jsonPath("$", Matchers.hasSize(1)));
@@ -90,15 +96,18 @@ public class ReportControllerTest {
 
 	@Test
 	public void uploadMultipleFilesToTempFolder() throws Exception {
+		// Create temporary folder
 		MvcResult result = mockMvc.perform(post("/report/component")).andExpect(status().is(HttpStatus.CREATED.value())).andReturn();
 		String location = result.getResponse().getHeader("Location");
 		addFolderToDelete(location);
 
+		// Create multipart files to upload
 		MockMultipartFile file1 = TestUtils.getMockMultipartFile(Constants.REQUEST_PARAM_MULTIPART, SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_1);
 		MockMultipartFile file2 = TestUtils.getMockMultipartFile(Constants.REQUEST_PARAM_MULTIPART, SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_2);
 		MockMultipartFile file3 = TestUtils.getMockMultipartFile(Constants.REQUEST_PARAM_MULTIPART, SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_3);
 		MockMultipartFile file4 = TestUtils.getMockMultipartFile(Constants.REQUEST_PARAM_MULTIPART, SAMPLE_ASSET_FOLDER + SAMPLE_XML);
 
+		// Upload files to temporary folder
 		mockMvc.perform(MockMvcRequestBuilders.multipart(location + RESOURCES_PATH)
 				.file(file1).file(file2).file(file3).file(file4))
 				.andExpect(status().is(HttpStatus.CREATED.value())).andExpect(jsonPath("$").isArray())
@@ -111,12 +120,15 @@ public class ReportControllerTest {
 
 	@Test
 	public void uploadXmlFile() throws Exception {
+		// Create temporary folder
 		MvcResult result = mockMvc.perform(post("/report/component")).andExpect(status().is(HttpStatus.CREATED.value())).andReturn();
 		String location = result.getResponse().getHeader("Location");
 		addFolderToDelete(location);
 
-		MockMultipartFile file = TestUtils.getMockMultipartFile(Constants.REQUEST_PARAM_XML, SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_1);
+		// Create XML file to upload
+		MockMultipartFile file = TestUtils.getMockMultipartFile(Constants.REQUEST_PARAM_XML, SAMPLE_ASSET_FOLDER + SAMPLE_XML);
 		
+		// Upload XML file to temporary folder
 		mockMvc.perform(MockMvcRequestBuilders.multipart(location + "/data")
 				.file(file))
 				.andExpect(status().is(HttpStatus.NO_CONTENT.value()));
@@ -129,16 +141,17 @@ public class ReportControllerTest {
 		String location = result.getResponse().getHeader("Location");
 		String folderName = getUUIDFromLocation(location);
 		addFolderToDelete(location);
-		
-		// Upload images to temporary folder
+
+		// Create multipart files to upload
 		MockMultipartFile file1 = TestUtils.getMockMultipartFile(Constants.REQUEST_PARAM_MULTIPART, SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_1);
 		MockMultipartFile file2 = TestUtils.getMockMultipartFile(Constants.REQUEST_PARAM_MULTIPART, SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_2);
 		MockMultipartFile file3 = TestUtils.getMockMultipartFile(Constants.REQUEST_PARAM_MULTIPART, SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_3);
+		
+		// Upload files to temporary folder
 		result = mockMvc.perform(MockMvcRequestBuilders.multipart(location + RESOURCES_PATH).file(file1).file(file2).file(file3)).andReturn();
-	
 		List<ReportAsset> fileList = mapper.readValue(result.getResponse().getContentAsString(), new TypeReference<List<ReportAsset>>() {});
 
-		// Create data.xml
+		// Create XML data source
 		StringBuilder xml = new StringBuilder();
 		xml.append("<?xml version=\"1.0\"?><data>");
 		xml.append("<name>Biff Tannen</name>");
@@ -163,13 +176,9 @@ public class ReportControllerTest {
 		xml.append("</data>");
 		
 		// Write data.xml to temporary folder
-		java.io.FileWriter fileWriter = new java.io.FileWriter(Constants.REPORT_TEMP_UPLOAD_PATH + folderName +"/"+ Constants.XML_FILE_NAME);
+		FileWriter fileWriter = new FileWriter(Constants.REPORT_TEMP_UPLOAD_PATH + folderName +"/"+ Constants.XML_FILE_NAME);
 		fileWriter.write(xml.toString());
 		fileWriter.close();
-
-		// Upload data.xml to temporary folder
-		MockMultipartFile file = TestUtils.getMockMultipartFile(Constants.REQUEST_PARAM_XML, Constants.REPORT_TEMP_UPLOAD_PATH + folderName +"/"+ Constants.XML_FILE_NAME);
-		mockMvc.perform(MockMvcRequestBuilders.multipart(location + "/data").file(file)).andReturn();
 
 		// Create report and get PDF as byte array
 		result = mockMvc.perform(get("/report/component/"+ folderName)).andExpect(status().is(HttpStatus.OK.value())).andReturn();
@@ -179,10 +188,12 @@ public class ReportControllerTest {
 	
 	@Test
 	public void removeTemporaryFolder() throws Exception {
+		// Create temporary folder
 		MvcResult result = mockMvc.perform(post("/report/component")).andExpect(status().is(HttpStatus.CREATED.value())).andReturn();
 		String location = result.getResponse().getHeader("Location");
 		String uuid = getUUIDFromLocation(location);
 
+		// Remove temporary folder
 		mockMvc.perform(delete("/report/component/" + uuid)).andExpect(status().is(HttpStatus.NO_CONTENT.value()));
 	}
 	
@@ -203,6 +214,7 @@ public class ReportControllerTest {
 			String[] elements = location.split("/");
 
 			if (elements.length > 1) {
+				// UUID is last element in location
 				uuid = elements[elements.length - 1];
 
 				if (uuid.length() != 36) {

@@ -43,6 +43,7 @@ public class ResourceServiceTest {
 	
 	@After
 	public void removeAllTemporaryFolders() {
+		// Remove all test folders and files
 		for (String folder : tempFolders) {
 			resourceService.removeTemporaryFolder(folder);
 		}
@@ -50,44 +51,54 @@ public class ResourceServiceTest {
 	
 	@Test
 	public void createTemporaryFolder() throws FileNotFoundException {
+		// Create temporary folder
 		String folderName = resourceService.createTempFolder();
 		tempFolders.add(folderName);
 
 		assertNotNull(folderName);
 
+		// Check if folder exists
 		File folder = new File(Constants.REPORT_TEMP_UPLOAD_PATH + folderName);
 		assertEquals(true, folder.exists());
 	}
 
 	@Test
 	public void uploadFileToTempFolder() throws Exception {
-		String folderName = resourceService.createTempFolder();
 		List<MultipartFile> files = new ArrayList<MultipartFile>();
+
+		// Create temporary folder
+		String folderName = resourceService.createTempFolder();
 		tempFolders.add(folderName);
 
+		// Create a multipart file to upload
 		File file = ResourceUtils.getFile(SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_1);
 		assertEquals(true, file.exists());
 
+		// Upload a file to temporary folder
 		MockMultipartFile mFile = new MockMultipartFile(Constants.REQUEST_PARAM_MULTIPART, file.getName(), "image/png", TestUtils.readFileAsBytesArray(file));
 		files.add(mFile);
-
+		
+		// Check if file exists
 		List<ReportAsset> fileList = resourceService.uploadMultipartFiles(folderName, files);
 		assertEquals(1, fileList.size());
 	}
 
 	@Test
 	public void uploadMultipleFilesToTempFolder() throws Exception {
-		String folderName = resourceService.createTempFolder();
 		List<MultipartFile> files = new ArrayList<MultipartFile>();
-		tempFolders.add(folderName);
 
+		// Create temporary folder
+		String folderName = resourceService.createTempFolder();
+		tempFolders.add(folderName);
+		
+		// Create multipart files to upload
 		MockMultipartFile file1 = TestUtils.getMockMultipartFile(Constants.REQUEST_PARAM_MULTIPART, SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_1);
 		MockMultipartFile file2 = TestUtils.getMockMultipartFile(Constants.REQUEST_PARAM_MULTIPART, SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_2);
 		MockMultipartFile file3 = TestUtils.getMockMultipartFile(Constants.REQUEST_PARAM_MULTIPART, SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_3);
 		MockMultipartFile file4 = TestUtils.getMockMultipartFile(Constants.REQUEST_PARAM_MULTIPART, SAMPLE_ASSET_FOLDER + SAMPLE_XML);
-		
 		files.addAll(Arrays.asList(file1, file2, file3, file4));
-
+	
+		// Check if files exists
 		List<ReportAsset> fileList = resourceService.uploadMultipartFiles(folderName, files);
 		assertEquals(4, fileList.size());
 		assertEquals(((ReportAsset) fileList.get(0)).getOrigin(), SAMPLE_IMAGE_1);
@@ -98,19 +109,25 @@ public class ResourceServiceTest {
 	
 	@Test
 	public void uploadXmlFile() throws Exception {
+		// Create temporary folder
 		String folderName = resourceService.createTempFolder();
 		tempFolders.add(folderName);
 		
+		// Create and upload XML file to temporary folder
 		MockMultipartFile file = TestUtils.getMockMultipartFile(Constants.REQUEST_PARAM_XML, SAMPLE_ASSET_FOLDER + SAMPLE_XML);
 		assertEquals(true, resourceService.uploadDataXml(folderName, file));
-		
+
+		// Check if file exists
 		File xmlData = new File(Constants.REPORT_TEMP_UPLOAD_PATH + folderName +"/data.xml");
 		assertEquals(true, xmlData.exists());
 	}
 	
 	@Test
 	public void removeTemporaryFolder() throws FileNotFoundException {
+		// Create temporary folder
 		String folderName = resourceService.createTempFolder();
+		
+		// Check if temporary folder is removed
 		assertEquals(true, resourceService.removeTemporaryFolder(folderName));
 	}
 }

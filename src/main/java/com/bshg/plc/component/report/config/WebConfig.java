@@ -11,7 +11,9 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 public class WebConfig {
 	@Bean
 	public MultipartResolver multipartResolver() {
+		// Add Bean CommonsMultipartResolver to handle multipart file uploads
 		CommonsMultipartResolver multipartResolver = new CommonsMultipartResolver();
+		
 		return multipartResolver;
 	}
 }

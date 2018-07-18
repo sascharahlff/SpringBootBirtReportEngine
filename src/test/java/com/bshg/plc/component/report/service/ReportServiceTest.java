@@ -2,6 +2,7 @@ package com.bshg.plc.component.report.service;
 
 import static org.junit.Assert.assertNotEquals;
 
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -41,6 +42,7 @@ public class ReportServiceTest {
 
 	@After
 	public void removeAllTemporaryFolders() {
+		// Remove all test folders and files
 		for (String folder : tempFolders) {
 			 resourceService.removeTemporaryFolder(folder);
 		}
@@ -54,14 +56,16 @@ public class ReportServiceTest {
 		String folderName = resourceService.createTempFolder();
 		tempFolders.add(folderName);
 
-		// Upload images to temporary folder
+		// Create multipart files to upload
 		MockMultipartFile file1 = TestUtils.getMockMultipartFile(Constants.REQUEST_PARAM_MULTIPART, SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_1);
 		MockMultipartFile file2 = TestUtils.getMockMultipartFile(Constants.REQUEST_PARAM_MULTIPART, SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_2);
 		MockMultipartFile file3 = TestUtils.getMockMultipartFile(Constants.REQUEST_PARAM_MULTIPART, SAMPLE_IMAGE_FOLDER + SAMPLE_IMAGE_3);
+		
+		// Upload files to temporary folder
 		files.addAll(Arrays.asList(file1, file2, file3));
 		List<ReportAsset> fileList = resourceService.uploadMultipartFiles(folderName, files);
 
-		// Create data.xml
+		// Create XML data source
 		StringBuilder xml = new StringBuilder();
 		xml.append("<?xml version=\"1.0\"?><data>");
 		xml.append("<name>Biff Tannen</name>");
@@ -86,11 +90,11 @@ public class ReportServiceTest {
 		xml.append("</data>");
 		
 		// Write data.xml to temporary folder
-		java.io.FileWriter fileWriter = new java.io.FileWriter(Constants.REPORT_TEMP_UPLOAD_PATH + folderName +"/"+ Constants.XML_FILE_NAME);
+		FileWriter fileWriter = new FileWriter(Constants.REPORT_TEMP_UPLOAD_PATH + folderName +"/"+ Constants.XML_FILE_NAME);
 		fileWriter.write(xml.toString());
 		fileWriter.close();
 		
-		// Create Report
+		// Create report and get PDF as byte array
 		byte[] byteArray = reportService.createReport(folderName);
 		assertNotEquals(0, byteArray.length);
 	}
