@@ -85,6 +85,12 @@ public class ResourceServiceImpl implements ResourceService {
 	}
 
 	private String createTemporaryFolder() {
+		File uploadFolder = new File(Constants.REPORT_TEMP_UPLOAD_PATH);
+		
+		if (!uploadFolder.exists()) {
+			uploadFolder.mkdir();
+		}
+		
 		String uuid = UUID.randomUUID().toString();
 		File folder = new File(Constants.REPORT_TEMP_UPLOAD_PATH + uuid);
 

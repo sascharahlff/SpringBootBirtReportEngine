@@ -23,7 +23,7 @@
             <expression name="uri" type="constant">src/main/resources/images/bshLogo.png</expression>
         </image>
         <grid id="47">
-            <property name="width">8.36111111111111in</property>
+            <property name="width">auto</property>
             <column id="48">
                 <property name="width">2.9583333333333335in</property>
             </column>
